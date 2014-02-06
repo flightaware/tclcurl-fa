@@ -1,0 +1,64 @@
+There are a number of issues with namespaces in AOLserver 3.x, which I believe
+are fixed in 4.0, which should be released within a few months. But in the
+meantime this is what we've had to do for AOLserver 3.2 on Windows 2000.
+
+Alex Khassin
+
+
+1.  Under [ns_library shared] directory, create a directory called
+    packages.
+
+2.  Register this directory as a Tcl module in nsd.tcl:
+        ns_section "ns/server/${servername}/modules"
+        ns_param   packages Tcl
+
+3.  Place each package into a subdirectory of the same name as the
+    package name (i.e. [ns_library shared]/packages/TclCurl)
+
+4.  Copy S:\NaviSoft\Server\modules\tcl\am\packages.init.tcl to the
+    [ns_library shared]/packages directory and rename to just init.tcl
+
+5.  Under AOLserver 4.x (and hopefully in 3.5.x) add to the bottom
+    of this file appropriate commands to register each package:
+        _am_pregister shared <packageName>
+
+6.  In your code, when you need to use a particular package, instead
+    of 'package require <packageName>', execute 'am_pinit <packageName>'
+
+7.  This will use the existing package registration under AOLserver
+    4.x and, under AOLserver 3.2, it will first register the package
+    in this interpreter and then use it.
+
+8.  This is necessary because in AOLserver 3.2, namespaces aren't
+    properly imported into child interpreters.
+
+    Currently dnscrub.com is set up like this for TclCurl and it works.
+
+    Example usage:
+
+        am_pinit TclCurl
+        curl::transfer -url http://am.net/index.htm -file d:/test.htm
+
+FYI, the code for am_pinit and _am_pregister procs:
+
+        proc am_pinit {package} {
+        # AOLserver 3.2 package/namespace-handling is broken
+        # (namespace/packages don't get imported into child interpreters)
+        # so use this workaround proc instead of 'package require' to
+        # load the package into the current interpreter
+        # (this is obviously slower than copying from master interpeter)
+        # Package names are case-sensitive!
+        # Returns the version of the loaded package
+            set library shared
+            if {[lsearch -exact [package names] $package] == -1} {
+                ns_log Notice "packages: registering $library/$package"
+                _am_pregister $library $package
+            }
+            package require $package
+        }
+         
+        proc _am_pregister {library package} {
+        # Registers the package. library is 'shared' or 'private'
+            set dir [ns_library $library]/packages/$package
+            source $dir/pkgIndex.tcl
+        }

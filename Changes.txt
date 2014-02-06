@@ -1,0 +1,895 @@
+Version 7.22.0 released 03-Oct-2011
+
+    * New configure options:
+
+        * resolve: Pass a list of strings with host name resolve information to use for
+          requests with this handle.
+
+          Each single name resolve string should be written using the format
+          HOST:PORT:ADDRESS where HOST is the name TclCurl will try to resolve, PORT is
+          the port number of the service where TclCurl wants to connect to the HOST and
+          ADDRESS is the numerical IP address. If libcurl is built to support IPv6,
+          ADDRESS can be either IPv4 or IPv6 style addressing.
+
+        * tlsauthusername, tlsauthpassword: Pass a string with the username or password to
+          use for the TLS authentication method specified with the 'tlsauthtype' option.
+ 
+        * tlsauthtype: Use it to tell TclCurl which authentication method(s) you want it to
+          use for TLS authentication. So far the only method is 'tlsauthsrp' for TLS-SRP
+          authentication. Secure Remote Password authentication for TLS is defined in
+          RFC 5054 and provides mutual authentication if both sides have a shared secret.
+
+          You need to build libcurl with GnuTLS or OpenSSL with TLS-SRP support for this
+          to work.
+
+        * transferencoding: Adds a request for compressed Transfer Encoding in the outgoing
+          HTTP request. If the server supports this and so desires, it can respond with the
+          HTTP resonse sent using a compressed Transfer-Encoding that will be automatically
+          uncompressed by TclCurl on receival.
+
+          Transfer-Encoding differs slightly from the Content-Encoding you ask for with
+          'encoding' in that a Transfer-Encoding is strictly meant to be for the transfer
+           and thus MUST be decoded before the data arrives in the client. Traditionally,
+          Transfer-Encoding has been much less used and supported by both HTTP clients and
+          HTTP servers.
+
+        * wildcard: Set this option to 1 if you want to transfer multiple files according to
+          a file name pattern. The pattern can be specified as part of the url, using an
+          fnmatch-like pattern (Shell Pattern Matching) in the last part of URL (file name).
+
+          So far it only works with FTP.
+
+        * fnmatchfunction: Name of the procedure that will be called instead of the internal
+          wildcard matching function, it should match the following prototype:
+
+                FnMatchProc {pattern string}
+
+          Returns '0' if it matches, '1' if it doesn't.
+
+        * chunkbgnproc: Name of the procedure that will be called before a file will be transfered
+          by ftp, it should match the following prototype:
+
+                ChunkBgnProc {remains}
+
+          Where remains is the number of files still to be transfered (or skipped)
+
+          This callback makes sense only when using the 'wildcard' option.
+
+        * chunkendproc: Name of the procedure that will be called after a file is transfered
+          (or skipped) by ftp when using the wildcard option, it should match the following
+          prototype:
+
+                ChunkEndProc {}
+
+          It should return '0' if everyhting is fine and '1' if some error occurred.
+
+        * chunkbgnvar: Name of the variable in the global scope that will contain the data of
+          the file about to be transfered. If you don't use this option '::fileData' will be used.
+
+          The available data is: filename, filetype (file, directory, symlink, device block,
+          device char, named pipe, socket, door or error if it couldn't be identified), time, perm,
+          uid, gid, size, hardlinks and flags.
+
+        * mailfrom: Pass a string to specify the sender address in a mail when sending an SMTP mail
+          with TclCurl.
+
+        * mailrcpt: Pass a list of recipients to pass to the server in your SMTP mail request.
+
+        * ftpusepret: Set to 1 to tell TclCurl to use the EPRT (and LPRT) command when doing
+          active FTP downloads (which is enabled by 'ftpport'). Using EPRT means that it will
+          first attempt to use EPRT and then LPRT before using PORT, if you pass zero to this
+          option, it will not try using EPRT or LPRT, only plain PORT.
+
+        * gssapidelegation: Set the option to 'flag' to allow unconditional GSSAPI
+          credential delegation. The delegation is disabled by default. Set the parameter
+          to 'policyflag' to delegate only if the OK-AS-DELEGATE flag is set in the service
+          ticket in case this feature is supported by the GSSAPI implementation and the
+          definition of GSS_C_DELEG_POLICY_FLAG was available at compile-time.
+
+        * telnetoptions: Pass a list with variables to pass to the telnet negotiations. 
+          The variables should be in the format <option=value>. TclCurl supports the
+          options'TTYPE', 'XDISPLOC' and 'NEW_ENV'. See the TELNET standard for details.
+
+
+    * Updated configure options:
+
+        * httpauth new method 'ntlmwb': NTLM delegating to winbind helper. Authentication is
+          performed by a separate binary application that is executed when needed. The name
+          of the application is specified at libcurl's compile time but is typically
+          /usr/bin/ntlm_auth.
+
+        * new proxy type 'socsk5h' to enable socks5 and asking the proxy to do the resolving
+
+    * New info available through the 'getinfo' command:
+
+        * primaryport: Returns the destination port of the most recent connection done.
+
+        * localip: Returns the local (source) IP address of the most recent connection done.
+          This string may be IPv6 if that's enabled.
+
+        * localport: Returns the local (source) port of the most recent connection done.
+
+    * Bug fixes:
+
+        * Sven Hoexter let me know that TclCurl no longer build as curl/types.h and curl/easy.h
+          no longer exists:
+
+        * Gary Nigg noticed that 'bodyvar' had to be reconfigured for each transfer.
+
+        * John Coppens got an error when he tried the 'curl::transfer' command.
+
+        * Gerald Dumas reported that TclCurl wouldn't compile in FreeBSD, it so happens that
+          the upstart type 'ulong' isn't good enough for it.
+
+
+
+Version 7.19.0 released 1-Sep-2008
+
+    * New commands:
+
+        * curlHandle pause and curlHandle resume: Pause and resume a
+          tranfer from within a progress callback procedure.
+
+    * New configure options:
+
+        * addressscope: Pass a number specifying the scope_id value to
+          use when connecting to IPv6 link-local or site-local addresses.
+
+        * proxytranfermode: Pass a number. If the value is set to 1 (one),
+          it tells TclCurl to set the transfer mode (binary or ASCII) for
+          FTP transfers done via an HTTP proxy, by appending ;type=a or
+          ;type=i to the URL. Without this setting, or if set to 0 (zero,
+          the default), '-tranfertext' has no effect when doing FTP via a
+          proxy. Beware that not all proxies support this feature.
+
+        * Added two new types for the '-proxytype' option: 'socks4a'
+          and 'socks5hostname'.
+
+    * New info available through the 'getinfo' command:
+
+        * appconnecttime: Returns the time, in seconds, it took from the start
+          until the SSL/SSH connect/handshake to the remote host was completed.
+
+        * primaryip: Returns the IP address of the most recent connection done
+          with this handle.
+
+        * redirecturl: Returns the URL a redirect would take you to if you would
+          enable 'followlocation'. This can come very handy if you think using
+          the built-in redirect logic isn't good enough for you but you would
+          still prefer to avoid implementing all the magic of figuring out the
+          new URL.
+
+    * Bug fix: The 'writeproc' option didn't work right.
+
+
+    * Internal changes:
+
+        * When compìling against Tcl 8.5.3 I had to remove a lot of CONSTs to
+          prevent warnings, and then I had to add them back with Tcl 8.5.4,
+          so, depending on which version you use you might get quite a few
+          warnings while compiling, they should be harmless though.
+
+        * The internal workings of the 'any' http authentication has been changed.
+
+Version 7.17.1 released 1-Nov-2007
+
+    * New configure options:
+
+        * post301: A non-zero parameter tells TclCurl to respect
+          RFC 2616/10.3.2 and not convert POST requests into GET
+          requests when following a 301 redirection like browsers
+          usually do.
+
+        * sshhostpublickeymd5: Pass a string containing 32 hexadecimal
+          digits. The string should be the 128 bit MD5 cheksum of the
+          remote host public key, and TclCurl will reject the connection
+          to the host unless the md5sums match.
+
+        * If you pass the magic string 'FLUSH' to the '-cookielist'
+          option all known cookies will be written to the file
+          specified by '-cookiejar'.
+
+    * Renamed options:
+
+        Some configure options have been renamed so they get more general
+        names, the old names are deprecated even if they may be supported
+        forever.
+
+            * sslpasswd   => keypasswd
+            * ftpappend   => append
+            * ftplistonly => dirlistonly
+            * ftpssl      => usessl
+
+    * Internal changes:
+
+        Up until the current version when we wanted libcurl to use a value
+        in a string, like the URL to download, we had to keep the string as
+        long as libcurl could use it. Since 7.17.0 libcurl keeps it own
+        copies, so I no longer make TclCurl do it.
+
+        That means this is a handle-with-care release, please report any
+        problems you may have.
+
+
+Version 7.16.4 released 19-July-07
+
+    * New configure options:
+
+        * newfileperms: Used to set the permissions, defalt 0664, that will be
+          assigned to newly created files on the remote server.
+
+        * newdirectoryperms: Used to set the permissions, default 0755, that
+          will be assigned to newly created directories on the remote server.
+
+          They can both be used for SFTP, SCP and FILE transfers.
+
+    * Changed option: The option to set the Kerberos security
+      level for FTP is now called 'krblevel', the old name
+      'krb4level' will be kept for some time for compatibility.
+
+    * New option for multi handles:
+
+        * maxconnects: Sets the maximum amount of simultaneously open
+          connections that TclCurl may cache. Default is 10.
+
+    * Bug fix: Sven Hoexter fixed a couple of errors in the man page.
+
+Version 7.16.2 released 16-April-07
+
+    * New feature: TclCurl now supports SSH for SFTP and SCP transfers as long
+      as libcurl has been compiled with libssh2 support.
+
+    * New configure options:
+
+        * publickeyfile: name of the file with the public key to use with SSH.
+
+        * privatekeyfile: name of the file with the provate key to use with SSH.
+
+        * sshauthtypes: Allowed types are "publickey", "password", "host",
+          "keyboard", or "any" to let TclCurl choose one.
+
+        * timeoutms and connectimeoutms: The work like 'timeout' and
+          'connectimeout' except the timout is given in miliseconds.
+
+        * ftpsslccc: If enabled, it will make libcurl shutdown SSL/TLS after
+          the authentication is done on a FTP-SSL operation.
+
+        * httpcontentdecoding: If set to zero content decoding is disabled.
+
+        * httptransferdecoding: If set to zero Set transfer decoding is
+          disabled. TclCurl does chunked transfer decoding by default
+          unless this option is set to zero.
+
+        * ftpsslccc: If enabled, it will make libcurl shutdown SSL/TLS after
+          the authentication is done on a FTP-SSL operation.
+
+    * Bug fixes:
+
+        * Olivier Lenormand reported that in case the server sends more than
+          one 'Set-Cookie' header, TclCurl would only save the last one in
+          the header array. Now the array will contain a list with all the
+          cookies.
+
+        * Jos Decoster reported and helped fixing a crash that happened when
+          changing a handle from using a 'writeproc' to not using one.
+
+    * I have updated the configure scripts to TEA 3.6, hope you don't bump into
+      any regressions.
+
+Version 7.16.0 released 15-November-06
+
+    * Removed feature: TclCurl no longer supports third party FTP transfers.
+
+    * New configure options:
+
+        * ftpalternativetouser: Pass a string which will be used to authenticate
+          if the usual FTP "USER user" and "PASS password" negotiation fails. This
+          is currently only known to be required when connecting to Tumbleweed's
+          Secure Transport FTPS server using client certificates for
+          authentication.
+
+        * ftpentrypath: Returns a string holding the path of the entry path.
+          That is the initial path TclCurl ended up in when logging on to the
+          remote FTP server. Returns an empty string if something is wrong.
+
+        * maxsendspeed: Pass a speed in bytes per seconds. If an upload exceeds this
+          speed on cumulative average during the transfer, the transfer will pause to
+          keep the average rate less than or equal to the parameter value.
+
+        * maxrecvspeed: Pass a speed in bytes per second. If a download exceeds this
+          speed on cumulative average during the transfer, the transfer will pause to
+          keep the average rate less than or equal to the parameter value.
+
+    * New command for multi handles 'configure', so far the is only one option to set:
+
+        * pipelining: Pass a 1 to enable or 0 to disable. Enabling pipelining on a multi
+          handle will make it attempt to perform HTTP Pipelining as far as possible for
+          transfers using this handle. This means that if you add a second request that
+          can use an already existing connection, the second request will be "piped" on
+          the same connection rather than being executed in parallel.
+
+Version 0.15.3 released 17-April-06
+
+    * I updated the autoconf scripts to TEA 3.5, this seems to prevent
+      the warnings about how the headers files couldn't be compiled,
+      but it may have (re)introduced other bugs.
+
+    * Removed feature: TclCurl no longer supports Gopher, it probably
+      didn't work anyway.
+
+    * New configure options:
+
+        * localport: Sets the local port number of the socket used for
+          the connection. This can be used in combination with '-interface'
+          and you are recommended to use 'localportrange' as well when this
+          is set.
+
+        * localportrange: Number of attempts TclCurl should do to find a
+          working local port number. It starts with the given 'localport'
+          and adds one to the number for each retry.
+
+Version 0.15.1 released 10-January-06
+
+    * New configure options:
+
+        * ftpskippasvip: If set to a non-zero value, it instructs TclCurl
+          not to use the IP address the server suggests in its 227-response
+          to TclCurl's PASV command when TclCurl connects the data connection.
+          Instead TclCurl will re-use the same IP address it already uses for
+          the control connection. But it will use the port number from the
+          227-response.
+
+        * ftpfilemethod: It allows three values:
+
+              * multicwd: the default, TclCurl will do a single CWD operation
+                for each path part in the given URL. For deep hierarchies this
+                means very many commands. This is how RFC1738 says it should
+                be done.
+
+              * nocwd: no CWD at all is done, TclCurl will do SIZE, RETR, STOR
+                etc and give a full path to the server.
+
+              * singlecwd: make one CWD with the full target directory and then
+                operate on the file "normally".
+
+          The support for this options is still experimental, comments whether
+          the methods work or don't with different methods are welcome.
+
+          Likewise, the options, or their names, may change in future releases,
+          so they are not yet documented elsewhere.
+
+     * Bug fix: The Windows packages had defective 'doc' directories. Thanks to
+       Alex Hisen for letting me know.
+
+Version 0.14.1 released 4-September-05
+
+    * New configure options:
+
+        * ingnorecontentlength: Ignore the Content-Length header. This is
+          useful for Apache 1.x (and similar servers) which will report
+          incorrect content length for files over 2 gigabytes.
+
+        * cookielist: Pass a string with a cookie. The cookie can be
+          either in Netscape / Mozilla format or just regular HTTP-style
+          header (Set-Cookie: ...) format.
+
+          '$curlHandle getinfo cookielist' will return a list of all
+          cookies TclCurl knows (expired ones, too).
+
+        * When posting data, you can use the new 'filecontent' option to
+          read a file and use its contents as data.
+
+    * Bug fix: The code to post data was filled with memory leaks, I hope
+      I have fixed them all.
+
+Version 0.14.0 released 3-June-05
+
+    * BEHAVIOUR CHANGE: To set the version SSL/TLS to use with
+      '-sslversion' you can know use the values:
+
+        * default
+            The default action. When libcurl built with OpenSSL, this will
+            attempt to figure out the remote SSL protocol version.
+            Unfortunately there are a lot of ancient and broken servers in
+            use which cannot handle this technique and will fail to
+            connect. When libcurl is built with GnuTLS, this will mean SSLv3.
+
+        * tlsv1
+            Force TLSv1
+
+        * sslv2
+            Force SSLv2
+
+        * sslv3
+            Force SSLv3
+
+    * Bug fix: A report by Melissa Millard made me realize that the
+      options 'httpauth', 'proxyauth', 'ipresolve', 'ftpssl' and
+      'ftpsslauth' have, probably, never worked. They should now.
+
+    * I updated 'configure.in' and 'Makefile.in' to the latest versions
+      in Tcl's sample extension, unfortunately that's likely to introduce
+      some bugs, so, please, report any problems.
+
+Version 0.13.2 released 16-April-05
+
+    * New features:
+
+        * New configure options:
+
+             * ftpaccount: When an FTP server asks for "account data"
+               after user name and password has been provided.
+
+             * sourceurl: When set, it enables a FTP third party transfer.
+
+             * sourcequote: Exactly like '-quote', but for the source host.
+
+        * The following options are now obsolete 'sourcehost', 'sourcepath',
+          'sourceport' and 'pasvhost'.
+
+        * curl::versioninfo will indicate if there is support for
+          SSPI.
+
+        * More information can be obtained using 'curl::getinfo':
+
+              * numconnects: to get the number of new connections
+                TclCurl had to create to achieve the previous transfer.
+
+              * sslengines: returns a list of the OpenSSL crypto-engines
+                supported.
+
+              * httpconnectcode: returns the last received proxy
+                response code to a CONNECT request
+
+    * Bug fix:
+
+        * Fixed the "-sourcepostquote" option.
+
+        * Daniel A. Steffen fixed a bug with parallel builds.
+
+Version 0.12.2 released 18-October-04
+
+    * New features:
+
+        * You can now share dns and cookie information among TclCurl
+          handles, please check the docs for details.
+
+        * New configure option: 'ftpsslauth', you may need this option
+          because of servers like BSDFTPD-SSL from won't work properly
+          when "AUTH SSL" is issued but require "AUTH TLS" instead.
+
+        * Added three new commands to the 'curl' namespace:
+
+            * curl::easystrerror   errorCode
+
+            * curl::sharestrerror  errorCode
+
+            * curl::multistrerror  errorCode
+
+          All three will return a string explaining what the given error
+          number means.
+
+    * Bug fix:
+
+        * Ralph Mitchell reported that the 'cookiejar' option wouldn't
+          work in the latest version, it should now.
+
+Version 0.12.1 released 30-September-04
+
+    * New features:
+
+        * Third party ftp support, you can now transfer a file between
+          two different ftp servers. Check the 'ftp options' in the docs
+          page for details.
+
+        * A new command for curl handles 'reset' which re-initializes all
+          options previously set on a specified handle to the default values.
+
+          This puts back the handle to the same state as it was in when it
+          was just created with curl::init.
+
+          It does not change the following information kept in the handle:
+          live connections, the Session ID cache, the DNS cache, the cookies
+          and shares.
+
+        * Hooked the multi interface to Tcl's event loop, so you can have
+          fire-and-forget transfers:
+
+                set multiHandle [curl::multiinit]
+                set easyHandle  [curl::init]
+
+                $easyHandle  configure -file home.tar.gz                  \
+                        -url http://127.0.0.1/~andres/HomePage.tar.gz
+
+                $multiHandle addhandle $easyHandle
+                $multiHandle auto -command "CleanUp $multiHandle $easyHandle"
+
+          This support is experimental, so any comments are welcome.
+
+          Thanks to Eric Boudaillier who answered my question about how to
+          do it.
+
+        * New ssl data types have been added to 'debugproc'.
+
+        * In case of error when setting post data, the error will include a
+          code about the nature of the error.
+
+    * Bug fix:
+
+        * The 'autoreferer' option should now work.
+
+Version 0.12.0 released 09-July-04
+
+    * New configure options:
+
+        * '-port': Pass the number specifying what remote port to connect to,
+          instead of the one specified in the URL or the default port for the
+          used protocol.
+
+        * '-tcpnodelay': To specify whether the TCP_NODELAY option should be
+           set or cleared.
+
+           Setting this option will disable TCP's Nagle algorithm. The purpose
+           of this algorithm is to try to minimize the number of small packets
+           on the network.
+
+        * '-autoreferer': When enabled, TclCurl will automatically set the
+          'Referer:' field in requests where it follows a 'Location:' redirect.
+
+    * Bug fix:
+
+        * Thanks to Stefano Federici I noticed that the 'ftpssl' option didn't
+          work.
+
+Version 0.11.0 released 04-febrary-04
+
+
+    * New configure options:
+
+        * 'ftpssl': You can use ftps:// URLs to explicitly switch on SSL/TSL
+          for the control connection and the data connection.
+
+          Alternatively you can set this option to one of these values:
+
+              * 'nope': Do not attempt to use SSL
+
+              * 'try': Try using SSL, proceed anyway otherwise.
+
+              * 'control': Use SSL for the control conecction or fail.
+
+              * 'all': Use SSL for all communication or fail.
+
+        * 'netrcfile': Pass a string containing the full path name to the
+          file you want to use as .netrc file. For the option to work, you
+          have to set the 'netrc' option to 'required'. If this option is
+          omitted, and 'netrc' is set, TclCurl will attempt to find the a
+          .netrc file in the current user's home directory.
+
+    * Bug fix: Fixed the 'netrc' option.
+
+Version 0.10.8 released 29-december-03
+
+    * New 'configure' options:
+
+      * 'ftpresponsetimeout': Causes TclCurl to set a timeout period
+        on the amount of time that the server is allowed to take in
+        order to generate a response message for a command before the
+        session is considered hung.
+
+      * 'ipresolve': Allows an application to select what kind of
+        IP addresses to use when resolving host names. This is only
+        interesting when using host names that resolve addresses
+        using more than one version of IP.
+
+      * 'maxfilesize': Allows you to specify the maximum size
+        of a file to download.
+
+    * New 'getinfo' options:
+
+      * 'httpauthavail': Returns a list with the authentication method(s)
+        available.
+
+      * 'proxyauthavail': Returns a list with the authentication method(s)
+        available for your proxy athentication.
+
+    * Misc:
+
+      * 'curl::versioninfo' will now say if there is support for
+        asynchronus DNS and SPNEGO.
+
+      * The 'httpcode' for 'getinfo' is now called 'responsecode'
+        since it will now work with FTP transfers. The old option
+        name, while deprecated, will continue to work.
+
+    * Bug fixes:
+
+      * TclCurl still thought it was in version 0.10.4.
+
+      * Fixed the 'httpauth' option.
+
+      * The configure scripts would sometimes use the cURL in
+        '/usr/bin' instead of the one in '/usr/local/bin' despite
+        the '--with-curlprefix' tag.
+
+Version 0.10.7 released 03-September-03
+
+  * New configure options:
+
+    * 'ftpcreatemissingdirs': If set to non-zero, TclCurl
+      will attempt to create any remote directory that it
+      fails to CWD into. CWD is the command that changes
+      working directory.
+
+    * 'httpauth': Set to the authentication method you want,
+      the available ones are:
+
+        * 'basic': HTTP Basic authentication. This is the
+          default choice, and the only method that is in
+          widespread use and supported virtually everywhere.
+          It sends the user name and password over the network
+          in plain text, easily captured by others.
+
+        * 'digest': HTTP Digest authentication. Digest
+           authentication is a more secure way to do
+           authentication over public networks than the
+           regular old-fashioned Basic method.
+
+        * 'gssnegotiate': HTTP GSS-Negotiate authentication.
+           The GSS-Negotiate method was designed by Microsoft
+           and is used in their web aplications. It is primarily
+           meant as a support for Kerberos5 authentication
+           but may be also used along with another authenti-
+           cation methods.
+
+        * 'ntlm': HTTP NTLM authentication. A proprietary
+          protocol invented and used by Microsoft.
+
+        * 'any':TclCurl will automaticaly select the one it
+          finds most secure.
+
+        * 'anysafe': It may use anything but basic, TclCurl
+          will automaticly select the one it finds most secure.
+
+
+    * 'command': Executes a Tcl command after the transfer
+      is done. So far it only works in blocking transfers
+      which is pretty much useless.
+
+Version 0.10.5 released 21-May-03
+
+  * New configure option:
+
+    * 'ftpuseeptr': Set to non-zero, to tell TclCurl to use the EPRT
+      (and LPRT) command when doing active FTP downloads (which is
+      enabled by 'ftpport'). Using EPRT means that it will first attempt
+      to use EPRT and then LPRT before using PORT, if you pass zero to
+      this option, it will not try using EPRT or LPRT, only plain PORT
+
+  * Bug fixes:
+
+    * The multi handles couldn't store the data of more than two
+     easy handles.
+
+    * Using the 'progressproc' option in Windows would crash Tcl.
+
+    * The '$multiHandle active' command wasn't returning anything.
+
+  * Misc:
+
+    * Updated ssl in Windows binaries to version 0.9.7b.
+
+    * Changed the way the http reponse header is dealt with in
+     the 'headervar' option. Now the whole header is put into
+     foo(http).
+
+     ************** POTENTIAL INCOMPATIBILITY **************
+
+Version 0.10.4 released 31-March-03
+
+  * New features:
+
+    * Added 'getinfo' features to the 'curl::transfer' command.
+
+     You can now do things like:
+
+       curl::transfer -url http://www.curl.com   \
+           -infohttpcode   httpCode              \
+           -infocontenttype contentType          \
+
+       puts "Http code: $httpCode"
+       puts "Content type: $contentType"
+
+    * New configure option: -unrestrictedauth, a non-zero parameter
+      tells the extension it can continue to send authentication
+      (user+password) when following locations, even when hostname
+      changed. Note that this is meaningful only when setting
+      -followlocation
+
+    * The makefile now has an 'uninstall' target.
+
+    * The Windows packages are now zlib enabled.
+
+    * Added a 'packages' directory with a makefile to create the
+      Windows packages and the spec file for rpm.
+
+  * Bug fix:
+
+    * The configure script will no longer choke with the version
+      string of cURL's prereleases.
+
+  * Misc
+
+    * If there is an error, the 'curl::transfer' command will now
+      return the code of the error, without the 'Couldn't perform
+      transfer' message.
+
+     ************** POTENTIAL INCOMPATIBILITY **************
+
+    * So that they have the same name in Windows and Linux, I have
+      changed the name of the certificate file in Windows to
+      'curl-ca-bundle.crt' and it will placed in the 'Windows'
+      directory.
+
+     ************** POTENTIAL INCOMPATIBILITY **************
+
+    * Alex Khassin suggested using fully qualified in 'tclcurl.tcl'
+      names to prevent problems with namespaces.
+
+Version 0.10.3 released 30-January-03
+
+  * New configure option:
+
+    * 'http200alieases': To pass a list of aliases to be treated as valid
+       HTTP 200 responses.
+
+  * Bug fixes:
+
+    * When using '-headervar' in Windows you could end up with carriage
+      returns in the name of the header.
+
+    * Julian let me know that TclCurl would crash when used in a thread
+      enabled Tcl.
+
+  * Enhancements:
+
+    * Since compiling TclCurl in Windows is a real pain, I will provide
+      more packages for it, thread and ssl enabled.
+
+    * Alex Khassin has written instructions on how to get TclCurl to work
+      with AOLSever.
+
+Version 0.10.1 released 14-October-02
+
+  * New configure options:
+
+    * 'proxytype': Allows you to set type of the proxy. Available options
+      are 'http' and 'socks5', with the HTTP one being default.
+
+    * 'encoding': TclCurl can now request compressed contents using the
+      'deflate' method.
+
+    * 'buffersize': To set prefered size for the receive buffer in TclCurl,
+      so that the write callback is called more often with smaller chunks.
+
+    * 'nosignal': Tells TclCurl not use any functions that install signal
+      handlers or any functions that cause signals to be sent to the process.
+
+  * New command:
+
+    * 'curl::versioninfo': Returns information about various run-time
+      features in TclCurl.
+
+  * Bug fixes:
+
+    * Fixed to 'buffer' option to post data.
+
+    * Asif Haswarey reported that '--with-curlinclude' wouldn't work.
+
+    * The multi interface examples suddenly stopped working, they
+      should now.
+
+Version 0.9.8 released 25-June-02
+
+  * Support for libcurl's multi interface, the main features are:
+
+    * Enable a "pull" interface. The application that uses TclCurl
+      decides where and when to get/send data.
+
+    * Enable multiple simultaneous transfers in the same thread
+      without making it complicated for the application.
+
+    * Keep Tk GUIs 'alive' while transfers are taking place.
+
+  * New 'httppost' options
+
+    * 'bufferName' and 'buffer', the contents of buffer will be sent
+       to the server as if they were a file whose name is in bufferName,
+       please check the 'httpBufferPost.tcl' example.
+
+  * New 'getinfo' options
+
+    * redirectime: Returns the total time, in seconds, it took for all
+      redirection steps including name lookup, connect, pretransfer and
+      transfer before the final transaction was started, it returns the
+      complete execution time for multiple redirections.
+
+    * redirectcount: Returns the total number of redirections that were
+      actually followed.
+
+Version 0.9.6 released 30-April-02
+
+  * New configure options:
+
+    * dnscachetimeout, to set the timeout in seconds for keeping the name resolves
+      in memory.
+
+    * dnsuseglobalcache, if set to '1' the DNS cache will be shared among
+      curl handles.
+
+    * debugproc, to set a procedure that will receive the debug data
+      produced by the 'verbose' option.
+
+
+  * Jonathan Matthew found and fixed a seg fault when you used
+    the 'httpheader' option twice with the same handle.
+
+
+  * The configure scripts saw more work in this release:
+
+    * I merged the latest changes to the TEA sample extension by
+      Jeff Hobbs.
+
+    * Suresh K. Sastry found and fixed an incompatibility with Solaris.
+
+    * And I hope I have not forgotten any 'DESTDIR' this time.
+
+Version 0.9.5 released 01-April-2002
+
+  * I have adapted the configure scripts to the new TEA scripts released by
+    Jeff Hobbs, for example, now it will compile 'out of the box' for freeBSD
+    systems (well, you may need to use '--with-curlprefix' and '--with-curlinclude')
+
+  * New configure option:
+
+    * prequote: use it to pass a list of ftp commands to execute *just before*
+      the transfer.
+
+  * New getinfo option:
+
+    * contenttype: if the servers bothers to tell you, this will return the type
+      of the downloadad object.
+
+  * Bug fix: 'curl::transfer' will return '0' if the transfer was successful.
+                     *** POTENTIAL INCOMPATIBILITY ***
+
+Version 0.9.3 released 29-Jan-2002
+
+  * Bug fix: There should no more seg faults because of trailing options
+    in configure commands.
+
+  * Bug fix: Binary transfer weren't done right in Windows, thanks to
+    Peter Waltenberg and Darren Blee for the report.
+
+  * TclCurl now supports OpenSSL engines, which allow you to keep your private
+    key stored in external hardware.
+
+        In order to manage this there are a few new configure options:
+
+            * sslcerttype: Set SSL cert type (PEM/DER).
+
+            * sslkey: Set SSL private key (file).
+
+            * sslkeytype: Set SSL key type (PEM/DER/ENG).
+
+            * sslkeypasswd: Set the passphrase for your private key.
+
+            * sslengine: Set the name of the crypto engine.
+
+            * sslenginedefault: Set the default engine.
+
+  * You can now add a set of headers for a particular part in a
+    multipart/form-post using the 'contentheader' option.
+
+  * It is now possible to execute commands in ftp servers without
+    transfering files, you have to set 'nobody' to '1' and 'header' to
+    '0'.

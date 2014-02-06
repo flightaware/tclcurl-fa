@@ -1,0 +1,320 @@
+<HTML><HEAD><TITLE>Manpage of TclCurl</TITLE>
+</HEAD><BODY>
+<H1>TclCurl</H1>
+Section: TclCurl Multi Interface (n)<BR>Updated: 03 September 2011<BR><HR>
+
+<A NAME="lbAB">&nbsp;</A>
+<H2>NAME</H2>
+
+TclCurl: - get  a  URL with FTP, FTPS, HTTP, HTTPS, SCP, SFTP, TFTP, TELNET, DICT, FILE, LDAP,
+LDAPS, IMAP, IMAPS, POP, POP3, SMTP, SMTPS and gopher syntax.
+<A NAME="lbAC">&nbsp;</A>
+<H2>SYNOPSIS</H2>
+
+<B>curl::multiinit</B>
+
+<P>
+<I>multiHandle</I><B> addhandle</B>
+
+<P>
+<I>multiHandle</I><B> removehandle</B>
+
+<P>
+<I>multiHandle</I><B> configure</B>
+
+<P>
+<I>multiHandle</I><B> perform</B>
+
+<P>
+<I>multiHandle</I><B> active</B>
+
+<P>
+<I>multiHandle</I><B> getinfo </B>
+
+<P>
+<I>multihandle</I><B> cleanup</B>
+
+<P>
+<I>multihandle</I><B> auto</B>
+
+<P>
+<B>curl::multistrerror </B><I>errorCode</I>
+
+<P>
+<A NAME="lbAD">&nbsp;</A>
+<H2>DESCRIPTION</H2>
+
+TclCurl's multi interface introduces several new abilities that the easy
+interface refuses to offer. They are mainly:
+<ul>
+<li>Enable a &quot;pull&quot; interface. The application that uses TclCurl decides where
+and when to get/send data.<br><br>
+<li>Enable multiple simultaneous transfers in the same thread without making it
+complicated for the application.<br><br>
+<li>Keep Tk GUIs 'alive' while transfers are taking place.<br><br>
+</ul>
+<P>
+</DL>
+<A NAME="lbAE">&nbsp;</A>
+<H2>Blocking</H2>
+
+A few areas in the code are still using blocking code, even when used from the
+multi interface. While we certainly want and intend for these to get fixed in
+the future, you should be aware of the following current restrictions:
+<ul>
+<li>Name resolves on non-windows unless c-ares is used.</B>
+
+<li>GnuTLS SSL connections.</B>
+
+<li>Active FTP connections.</B>
+
+<li>HTTP proxy CONNECT operations.</B>
+
+<li>SCP and SFTP connections.</B>
+
+<li>SFTP transfers.</B>
+
+<li>TFTP transfers</B>
+
+<li>file:// transfers.</B>
+</ul>
+
+<P>
+<A NAME="lbAF">&nbsp;</A>
+<H2>curl::multiinit</H2>
+
+This procedure must be the first one to call, it returns a <I>multiHandle</I>
+that you need to use to invoke TclCurl procedures. The init MUST have a
+corresponding call to <I>cleanup</I> when the operation is completed.
+<P>
+<B>RETURN VALUE</B>
+
+<P>
+<I>multiHandle</I>
+
+to use.
+<P>
+<A NAME="lbAG">&nbsp;</A>
+<H2>multiHandle addhandle ?easyHandle?</H2>
+
+<P>
+Each single transfer is built up with an 'easy' handle, the kind we have been
+using so far with TclCurl, you must create them and setup the appropriate
+options for each of them. Then we add them to the 'multi stack' using the
+<I>addhandle</I> command.
+<P>
+If the easy handle is not set to use a shared or global DNS cache, it will be made
+to use the DNS cache that is shared between all easy handles within the multi handle.
+<P>
+When an easy handle has been added to a multi stack, you can not and you must not use
+<I>perform</I> on that handle!
+<P>
+<P>
+<I>multiHandle</I>
+
+is the return code from the <I>curl::multiinit</I> call.
+<P>
+<B>RETURN VALUE</B>
+
+The possible return values are:
+<DL COMPACT>
+<DT>-1<DD>
+Handle added to the multi stack, please call
+<I>perform</I>
+
+soon
+<DT>0<DD>
+Handle added ok.
+<DT>1<DD>
+Invalid multi handle.
+<DT>2<DD>
+Invalid 'easy' handle. It could mean that it isn't an easy handle at all, or possibly that
+the handle already is in used by this or another multi handle. 
+<DT>3<DD>
+Out of memory, you should never get this.
+<DT>4<DD>
+You found a bug in TclCurl.
+<P>
+</DL>
+<A NAME="lbAH">&nbsp;</A>
+<H2>multiHandle removehandle ?easyHandle?</H2>
+
+<P>
+When a transfer is done or if we want to stop a transfer before it is completed,
+we can use the <I>removehandle</I> command. Once removed from the multi handle,
+we can again use other easy interface functions on it.
+<P>
+Please note that when a single transfer is completed, the easy handle is still
+left added to the multi stack. You need to remove it and then close or, possibly,
+set new options to it and add it again to the multi handle to start another transfer.
+<P>
+<P>
+<B>RETURN VALUE</B>
+
+The possible return values are:
+<DL COMPACT>
+<DT>0<DD>
+Handle removed ok.
+<DT>1<DD>
+Invalid multi handle.
+<DT>2<DD>
+Invalid 'easy' handle.
+<DT>3<DD>
+Out of memory, you should never get this.
+<DT>4<DD>
+You found a bug in TclCurl.
+<P>
+</DL>
+<A NAME="lbAI">&nbsp;</A>
+<H2>multiHandle configure</H2>
+
+So far the only option is:
+<DL COMPACT>
+<DT><B>-pipelining</B>
+
+<DD>
+Pass a 1 to enable or 0 to disable. Enabling pipelining on a multi handle will
+make it attempt to perform HTTP Pipelining as far as possible for transfers using
+this handle. This means that if you add a second request that can use an already
+existing connection, the second request will be &quot;piped&quot; on the same connection
+rather than being executed in parallel.
+<DT><B>-maxconnects</B>
+
+<DD>
+Pass a number which will be used as the maximum amount of simultaneously open
+connections that TclCurl may cache. Default is 10, and TclCurl will enlarge
+the size for each added easy handle to make it fit 4 times the number of added
+easy handles.
+<P>
+By setting this option, you can prevent the cache size to grow beyond the limit
+set by you. When the cache is full, curl closes the oldest one in the cache to
+prevent the number of open connections to increase.
+<P>
+This option is for the multi handle's use only, when using the easy interface you should instead use it's own <B>maxconnects</B> option.
+<P>
+</DL>
+<A NAME="lbAJ">&nbsp;</A>
+<H2>multiHandle perform</H2>
+
+Adding the easy handles to the multi stack does not start any transfer.
+Remember that one of the main ideas with this interface is to let your
+application drive. You drive the transfers by invoking
+<I>perform.</I>
+
+TclCurl will then transfer data if there is anything available to transfer.
+It'll use the callbacks and everything else we have setup in the individual
+easy handles. It'll transfer data on all current transfers in the multi stack
+that are ready to transfer anything. It may be all, it may be none.
+<P>
+When you call <B>perform</B> and the amount of Irunning handles is
+changed from the previous call (or is less than the amount of easy handles
+you added to the multi handle), you know that there is one or more
+transfers less &quot;running&quot;. You can then call <I>getinfo</I> to
+get information about each individual completed transfer.
+<P>
+<B>RETURN VALUE</B>
+
+If everything goes well, it returns the number of running handles, '0' if all
+are done. In case of error, it will return the error code.
+<P>
+<A NAME="lbAK">&nbsp;</A>
+<H2>multiHandle active</H2>
+
+In order to know if any of the easy handles are ready to transfer data before
+invoking
+<I>perform</I>
+
+you can use the
+<I>active</I>
+
+command, it will return the number of transfers currently active.
+<P>
+<B>RETURN VALUE</B>
+
+The number of active transfers or '-1' in case of error.
+<P>
+<A NAME="lbAL">&nbsp;</A>
+<H2>multiHandle getinfo</H2>
+
+This procedure returns very simple information about the transfers, you
+can get more detail information using the <I>getinfo</I>
+command on each of the easy handles.
+<P>
+<P>
+<B>RETURN VALUE</B>
+
+A list with the following elements:
+<DL COMPACT>
+<DT>easyHandle about which the info is about.<DD>
+<DT>state of the transfer, '1' if it is done.<DD>
+<DT>exit code of the transfer, '0' if there was no error,...<DD>
+<DT>Number of messages still in the info queue.<DD>
+<DT>In case there are no messages in the queue it will return {&quot;&quot; 0 0 0}.<DD>
+<P>
+</DL>
+<A NAME="lbAM">&nbsp;</A>
+<H2>multiHandle cleanup</H2>
+
+This procedure must be the last one to call for a multi stack, it is the opposite of the
+<I>curl::multiinit</I>
+
+procedure and must be called with the same
+<I>multiHandle</I>
+
+as input as the
+<B>curl::multiinit</B>
+
+call returned.
+<P>
+<A NAME="lbAN">&nbsp;</A>
+<H2>multiHandle auto ?-command <I>command</I>?</H2>
+
+Using this command Tcl's event loop will take care of periodically invoking <B>perform</B>
+for you, before using it, you must have already added at least one easy handle to
+the multi handle.
+<P>
+The <B>command</B> option allows you to specify a command to invoke after all the easy
+handles have finished their transfers, even though I say it is an option, the truth is
+you must use this command to cleanup all the handles, otherwise the transfered files
+may not be complete.
+<P>
+This support is still in a very experimental state, it may still change without warning.
+Any and all comments are welcome.
+<P>
+You can find a couple of examples at <B>tests/multi</B>.
+<P>
+<A NAME="lbAO">&nbsp;</A>
+<H2>curl::multistrerror errorCode</H2>
+
+This procedure returns a string describing the error code passed in the argument.
+<P>
+<A NAME="lbAP">&nbsp;</A>
+<H2>SEE ALSO</H2>
+
+<I>tclcurl, curl.</I>
+
+<P>
+
+<HR>
+<A NAME="index">&nbsp;</A><H2>Index</H2>
+<DL>
+<DT><A HREF="#lbAB">NAME</A><DD>
+<DT><A HREF="#lbAC">SYNOPSIS</A><DD>
+<DT><A HREF="#lbAD">DESCRIPTION</A><DD>
+<DT><A HREF="#lbAE">Blocking</A><DD>
+<DT><A HREF="#lbAF">curl::multiinit</A><DD>
+<DT><A HREF="#lbAG">multiHandle addhandle ?easyHandle?</A><DD>
+<DT><A HREF="#lbAH">multiHandle removehandle ?easyHandle?</A><DD>
+<DT><A HREF="#lbAI">multiHandle configure</A><DD>
+<DT><A HREF="#lbAJ">multiHandle perform</A><DD>
+<DT><A HREF="#lbAK">multiHandle active</A><DD>
+<DT><A HREF="#lbAL">multiHandle getinfo</A><DD>
+<DT><A HREF="#lbAM">multiHandle cleanup</A><DD>
+<DT><A HREF="#lbAN">multiHandle auto ?-command <I>command</I>?</A><DD>
+<DT><A HREF="#lbAO">curl::multistrerror errorCode</A><DD>
+<DT><A HREF="#lbAP">SEE ALSO</A><DD>
+</DL>
+<HR>
+This document was created by man2html, using the manual pages.<BR>
+</BODY>
+</HTML>

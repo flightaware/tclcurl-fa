@@ -1,0 +1,65 @@
+.\" You can view this file with:
+.\" nroff -man [file]
+.\" Adapted from libcurl docs by fandom@telefonica.net
+.TH TclCurl n "3 October 2011" "TclCurl 7.22.0 "TclCurl Easy Interface"
+.SH NAME
+TclCurl: - get  a  URL with FTP, FTPS, HTTP, HTTPS, SCP, SFTP, TFTP, TELNET, DICT, FILE, LDAP,
+LDAPS, IMAP, IMAPS, POP, POP3, SMTP, SMTPS and gopher syntax.
+.SH SYNOPSIS
+.BI "curl::shareinit"
+.sp
+.IB shareHandle " share " "?data?"
+.sp
+.IB shareHandle " unshare " "?data?"
+.sp
+.IB shareHandle " cleanup"
+.sp
+.BI "curl::sharestrerror " errorCode
+
+
+.SH DESCRIPTION
+
+With the share API, you can have two or more 'easy' handles sharing data
+among them, so far they can only share cookies and DNS data.
+
+.SH curl::shareinit
+This procedure must be the first one to call, it returns a \fBshareHandle\fP
+that you need to use to share data among handles using the \fB-share\fP option
+to the \fBconfigure\fP command. The init MUST have a corresponding call to
+\fBcleanup\fP when the operation is completed.
+
+.B RETURN VALUE
+.sp
+\fBshareHandle\fP to use.
+
+.SH shareHandle share ?data?
+
+The parameter specifies a type of data that should be shared. This may be set
+to one of the values described below:
+
+.RS
+.TP 5
+.B cookies
+Cookie data will be shared across the easy handles using this shared object.
+
+.TP
+.B dns
+Cached DNS hosts will be shared across the easy handles using this shared object.
+Note that when you use the multi interface, all easy handles added to the same multi
+handle will share DNS cache by default without this having to be used!
+.RE
+
+.SH shareHandle unshare ?data?
+This command does the opposite of \fBshare\fP. The specified parameter will no
+longer be shared. Valid values are the same as those for \fBshare\fP.
+
+.SH sharehandle cleanup
+
+Deletes a shared object. The share handle cannot be used anymore after this
+function has been called.
+
+.SH curl::sharestrerror errorCode
+Returns a string describing the error code passed in the argument.
+
+.SH "SEE ALSO"
+.I curl, TclCurl

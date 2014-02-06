@@ -1,0 +1,238 @@
+.\" You can view this file with:
+.\" nroff -man [file]
+.\" Adapted from libcurl docs by fandom@telefonica.net
+.TH TclCurl n "3 October 2011" "TclCurl 7.22.0 "TclCurl Easy Interface"
+.SH NAME
+TclCurl: - get  a  URL with FTP, FTPS, HTTP, HTTPS, SCP, SFTP, TFTP, TELNET, DICT, FILE, LDAP,
+LDAPS, IMAP, IMAPS, POP, POP3, SMTP, SMTPS and gopher syntax.
+.SH SYNOPSIS
+.BI "curl::multiinit"
+.sp
+.IB multiHandle " addhandle"
+.sp
+.IB multiHandle " removehandle"
+.sp
+.IB multiHandle " configure"
+.sp
+.IB multiHandle " perform"
+.sp
+.IB multiHandle " active"
+.sp
+.IB multiHandle " getinfo "
+.sp
+.IB multihandle " cleanup"
+.sp
+.IB multihandle " auto"
+.sp
+.BI "curl::multistrerror " errorCode
+.sp
+.SH DESCRIPTION
+TclCurl's multi interface introduces several new abilities that the easy
+interface refuses to offer. They are mainly:
+.TP
+Enable a "pull" interface. The application that uses TclCurl decides where and when to get/send data.
+.TP
+Enable multiple simultaneous transfers in the same thread without making it complicated for the application.
+.TP
+Keep Tk GUIs 'alive' while transfers are taking place.
+
+.SH Blocking
+A few areas in the code are still using blocking code, even when used from the
+multi interface. While we certainly want and intend for these to get fixed in
+the future, you should be aware of the following current restrictions:
+.RS
+.TP 5
+.B Name resolves on non-windows unless c-ares is used.
+.TP
+.B GnuTLS SSL connections.
+.TP
+.B GnuTLS SSL connections
+.TP
+.B Active FTP connections.
+.TP
+.B HTTP proxy CONNECT operations.
+.TP
+.B SOCKS proxy handshakes
+.TP
+.B file:// transfers.
+.TP
+.B TELNET transfers
+.RE
+
+.SH curl::multiinit
+This procedure must be the first one to call, it returns a \fImultiHandle\fP
+that you need to use to invoke TclCurl procedures. The init MUST have a
+corresponding call to \fIcleanup\fP when the operation is completed.
+.sp
+.B RETURN VALUE
+.sp
+.I multiHandle
+to use.
+.sp
+.SH multiHandle addhandle ?easyHandle?
+.sp
+Each single transfer is built up with an 'easy' handle, the kind we have been
+using so far with TclCurl, you must create them and setup the appropriate
+options for each of them. Then we add them to the 'multi stack' using the
+\fIaddhandle\fP command.
+
+If the easy handle is not set to use a shared or global DNS cache, it will be made
+to use the DNS cache that is shared between all easy handles within the multi handle.
+
+When an easy handle has been added to a multi stack, you can not and you must not use
+\fIperform\fP on that handle!
+
+.sp
+.I "multiHandle"
+is the return code from the \fIcurl::multiinit\fP call.
+.sp
+.B RETURN VALUE
+The possible return values are:
+.IP -1
+Handle added to the multi stack, please call
+.I perform
+soon
+.IP 0
+Handle added ok.
+.IP 1
+Invalid multi handle.
+.IP 2
+Invalid 'easy' handle. It could mean that it isn't an easy handle at all, or possibly that
+the handle already is in used by this or another multi handle. 
+.IP 3
+Out of memory, you should never get this.
+.IP 4
+You found a bug in TclCurl.
+.sp
+.SH multiHandle removehandle ?easyHandle?
+.sp
+When a transfer is done or if we want to stop a transfer before it is completed,
+we can use the \fIremovehandle\fP command. Once removed from the multi handle,
+we can again use other easy interface functions on it.
+
+Please note that when a single transfer is completed, the easy handle is still
+left added to the multi stack. You need to remove it and then close or, possibly,
+set new options to it and add it again to the multi handle to start another transfer.
+
+.sp
+.B RETURN VALUE
+The possible return values are:
+.IP 0
+Handle removed ok.
+.IP 1
+Invalid multi handle.
+.IP 2
+Invalid 'easy' handle.
+.IP 3
+Out of memory, you should never get this.
+.IP 4
+You found a bug in TclCurl.
+.sp
+.SH multiHandle configure
+So far the only options are:
+.TP
+.B -pipelining
+Pass a 1 to enable or 0 to disable. Enabling pipelining on a multi handle will
+make it attempt to perform HTTP Pipelining as far as possible for transfers using
+this handle. This means that if you add a second request that can use an already
+existing connection, the second request will be "piped" on the same connection
+rather than being executed in parallel.
+.TP
+.B -maxconnects
+Pass a number which will be used as the maximum amount of simultaneously open
+connections that TclCurl may cache. Default is 10, and TclCurl will enlarge
+the size for each added easy handle to make it fit 4 times the number of added
+easy handles.
+
+By setting this option, you can prevent the cache size to grow beyond the limit
+set by you. When the cache is full, curl closes the oldest one in the cache to
+prevent the number of open connections to increase.
+
+This option is for the multi handle's use only, when using the easy interface you should instead use it's own \fBmaxconnects\fP option.
+.sp
+.SH multiHandle perform
+Adding the easy handles to the multi stack does not start any transfer.
+Remember that one of the main ideas with this interface is to let your
+application drive. You drive the transfers by invoking
+.I perform.
+TclCurl will then transfer data if there is anything available to transfer.
+It'll use the callbacks and everything else we have setup in the individual
+easy handles. It'll transfer data on all current transfers in the multi stack
+that are ready to transfer anything. It may be all, it may be none.
+
+When you call \fBperform\fP and the amount of running handles is
+changed from the previous call (or is less than the amount of easy handles
+you added to the multi handle), you know that there is one or more
+transfers less "running". You can then call \fIgetinfo\fP to
+get information about each individual completed transfer. If an added handle
+fails very quickly, it may never be counted as a running handle. 
+
+.sp
+.B RETURN VALUE
+If everything goes well, it returns the number of running handles, '0' if all
+are done. In case of error, it will return the error code.
+
+This function only returns errors etc regarding the whole multi stack.
+Problems still might have occurred on individual transfers even when this
+function returns ok.
+
+.sp
+.SH multiHandle active
+In order to know if any of the easy handles are ready to transfer data before
+invoking
+.I perform
+you can use the
+.I active
+command, it will return the number of transfers currently active.
+.sp
+.B RETURN VALUE
+The number of active transfers or '-1' in case of error.
+
+.SH multiHandle getinfo
+This procedure returns very simple information about the transfers, you
+can get more detail information using the \fIgetinfo\fP
+command on each of the easy handles.
+
+.sp
+.B RETURN VALUE
+A list with the following elements:
+.TP
+easyHandle about which the info is about.
+.TP
+state of the transfer, '1' if it is done.
+.TP
+exit code of the transfer, '0' if there was no error,...
+.TP
+Number of messages still in the info queue.
+.TP
+In case there are no messages in the queue it will return {"" 0 0 0}.
+
+.SH multiHandle cleanup
+This procedure must be the last one to call for a multi stack, it is the opposite of the
+.I curl::multiinit
+procedure and must be called with the same
+.I multiHandle
+as input as the
+.B curl::multiinit
+call returned.
+
+.SH multiHandle auto ?-command \fIcommand\fP?
+Using this command Tcl's event loop will take care of periodically invoking \fBperform\fP
+for you, before using it, you must have already added at least one easy handle to
+the multi handle.
+
+The \fBcommand\fP option allows you to specify a command to invoke after all the easy
+handles have finished their transfers, even though I say it is an option, the truth is
+you must use this command to cleanup all the handles, otherwise the transfered files
+may not be complete.
+
+This support is still in a very experimental state, it may still change without warning.
+Any and all comments are welcome.
+
+You can find a couple of examples at \fBtests/multi\fP.
+
+.SH curl::multistrerror errorCode
+This procedure returns a string describing the error code passed in the argument.
+
+.SH "SEE ALSO"
+.I tclcurl, curl.

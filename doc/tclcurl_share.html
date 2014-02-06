@@ -1,0 +1,112 @@
+<HTML><HEAD><TITLE>Manpage of TclCurl</TITLE>
+</HEAD><BODY>
+<H1>TclCurl</H1>
+Section: TclCurl share data api (n)<BR>Updated: 03 October 2011<BR><HR>
+
+<A NAME="lbAB">&nbsp;</A>
+<H2>NAME</H2>
+TclCurl: - get  a  URL with FTP, FTPS, HTTP, HTTPS, SCP, SFTP, TFTP, TELNET, DICT, FILE, LDAP,
+LDAPS, IMAP, IMAPS, POP, POP3, SMTP, SMTPS and gopher syntax.
+<A NAME="lbAC">&nbsp;</A>
+<H2>SYNOPSIS</H2>
+
+<B>curl::shareinit</B>
+
+<P>
+<I>shareHandle</I><B> share </B><I>?data?</I>
+
+<P>
+<I>shareHandle</I><B> unshare </B><I>?data?</I>
+
+<P>
+<I>shareHandle</I><B> cleanup</B>
+
+<P>
+<B>curl::sharestrerror </B><I>errorCode</I>
+
+<P>
+<P>
+<A NAME="lbAD">&nbsp;</A>
+<H2>DESCRIPTION</H2>
+
+<P>
+With the share API, you can have two or more 'easy' handles sharing data
+among them, so far they can only share cookies and DNS data.
+<P>
+<A NAME="lbAE">&nbsp;</A>
+<H2>curl::shareinit</H2>
+
+This procedure must be the first one to call, it returns a <B>shareHandle</B>
+that you need to use to share data among handles using the <B>-share</B> option
+to the <B>configure</B> command. The init MUST have a corresponding call to
+<B>cleanup</B> when the operation is completed.
+<P>
+<B>RETURN VALUE</B>
+
+<P>
+<B>shareHandle</B> to use.
+<P>
+<A NAME="lbAF">&nbsp;</A>
+<H2>shareHandle share ?data?</H2>
+
+<P>
+The parameter specifies a type of data that should be shared. This may be set
+to one of the values described below:
+<P>
+<DL COMPACT><DT><DD>
+<DL COMPACT>
+<DT><B>cookies</B>
+
+<DD>
+Cookie data will be shared across the easy handles using this shared object.
+<P>
+<DT><B>dns</B>
+
+<DD>
+Cached DNS hosts will be shared across the easy handles using this shared object.
+</DL>
+</DL>
+
+<P>
+<A NAME="lbAG">&nbsp;</A>
+<H2>shareHandle unshare ?data?</H2>
+
+This command does the opposite of <B>share</B>. The specified parameter will no
+longer be shared. Valid values are the same as those for <B>share</B>.
+<P>
+<A NAME="lbAH">&nbsp;</A>
+<H2>sharehandle cleanup</H2>
+
+<P>
+Deletes a shared object. The share handle cannot be used anymore after this
+function has been called.
+<P>
+<A NAME="lbAI">&nbsp;</A>
+<H2>curl::sharestrerror errorCode</H2>
+
+Returns a string describing the error code passed in the argument.
+<P>
+<A NAME="lbAJ">&nbsp;</A>
+<H2>SEE ALSO</H2>
+
+<I>curl, TclCurl</I>
+
+<P>
+
+<HR>
+<A NAME="index">&nbsp;</A><H2>Index</H2>
+<DL>
+<DT><A HREF="#lbAB">NAME</A><DD>
+<DT><A HREF="#lbAC">SYNOPSIS</A><DD>
+<DT><A HREF="#lbAD">DESCRIPTION</A><DD>
+<DT><A HREF="#lbAE">curl::shareinit</A><DD>
+<DT><A HREF="#lbAF">shareHandle share ?data?</A><DD>
+<DT><A HREF="#lbAG">shareHandle unshare ?data?</A><DD>
+<DT><A HREF="#lbAH">sharehandle cleanup</A><DD>
+<DT><A HREF="#lbAI">curl::sharestrerror errorCode</A><DD>
+<DT><A HREF="#lbAJ">SEE ALSO</A><DD>
+</DL>
+<HR>
+This document was created by man2html, using the manual pages.<BR>
+</BODY>
+</HTML>
