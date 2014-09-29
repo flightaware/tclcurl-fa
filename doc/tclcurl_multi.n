@@ -186,7 +186,7 @@ you can use the
 command, it will return the number of transfers currently active.
 .sp
 .B RETURN VALUE
-The number of active transfers or '-1' in case of error.
+The number of active transfers or '\-1' in case of error.
 
 .SH multiHandle getinfo
 This procedure returns very simple information about the transfers, you

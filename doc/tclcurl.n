@@ -397,7 +397,7 @@ HTTP proxies.
 .B -proxyport
 Use this option to set the proxy port to use unless it is specified in
 the proxy string by \fB-proxy\fP. If not specified, TclCurl will default
--to using port 1080 for proxies.
+to using port 1080 for proxies.
 
 .TP
 .B -proxytype
@@ -460,7 +460,7 @@ too low might cause unnecessary connection setup failures.
 .TP
 .B -dnscachetimeout
 Pass the timeout in seconds. Name resolves will be kept in memory for this number
-of seconds. Set to '0' to completely disable caching, or '-1' to make the
+of seconds. Set to '0' to completely disable caching, or '\-1' to make the
 cached entries remain forever. By default, TclCurl caches this info for 60 seconds.
 
 The name resolve functions of various libc implementations don't re-read name
@@ -761,7 +761,7 @@ is  meaningful  only  when setting \fB-followlocation\fP.
 Sets the redirection limit. If that many redirections have been followed,
 the next redirect will cause an error. This option only makes sense if the
 \fB-followlocation\fP option is used at the same time. Setting the limit
-to 0 will make libcurl refuse any redirect. Set it to -1 for an infinite
+to 0 will make libcurl refuse any redirect. Set it to \-1 for an infinite
 number of redirects (which is the default)
 
 .TP
@@ -1341,7 +1341,7 @@ Pass the offset in number of bytes that you want the transfer to start from.
 Set this option to 0 to make the transfer start from the beginning
 (effectively disabling resume).
 
-For FTP, set this option to -1 to make the transfer start from the end of the
+For FTP, set this option to \-1 to make the transfer start from the end of the
 target file (useful to continue an interrupted upload). 
 
 When doing uploads with FTP, the resume position is where in the local/source
@@ -1536,7 +1536,7 @@ HOST+PORT will instead use your provided ADDRESS.
 
 You can remove names from the DNS cache again, to stop providing these fake
 resolves, by including a string in the linked list that uses the format
-"-HOST:PORT". The host name must be prefixed with a dash, and the host name
+"\-HOST:PORT". The host name must be prefixed with a dash, and the host name
 and port number must exactly match what was already added previously.
 
 .TP
@@ -2077,7 +2077,7 @@ Internal error. A function was called with a bad parameter.
 Interface error. A specified outgoing interface could not be used.
 .IP 47
 Too many redirects. When following redirects, TclCurl hit the maximum amount, set
-your limit with --maxredirs
+your limit with \-\-maxredirs
 .IP 48
 An option passed to TclCurl is not recognized/known. Refer to the appropriate
 documentation. This is most likely a problem in the program that uses
@@ -2186,7 +2186,7 @@ Returns the last received proxy response code to a CONNECT request.
 .TP
 .B filetime
 Returns the remote time of the retrieved document (in number of seconds
-since 1 jan 1970 in the GMT/UTC time zone). If you get -1,
+since 1 jan 1970 in the GMT/UTC time zone). If you get \-1,
 it can be because of many reasons (unknown, the server hides it or the
 server doesn't support the command that tells document time etc) and the time
 of the document is unknown.
@@ -2303,7 +2303,7 @@ requests. Note that this may be more than one request if followLocation is true.
 .TP
 .B sslverifyresult
 Returns the result of the certification verification that was requested
-(using the -sslverifypeer option to configure).
+(using the \-sslverifypeer option to configure).
 
 .TP
 .B sslengines
@@ -2315,7 +2315,7 @@ engines may be available at run-time.
 .B contentlengthdownload
 Returns the content-length of the download. This is the value read from the
 .B Content-Length:
-field. If the size isn't known, it returns -1.
+field. If the size isn't known, it returns \-1.
 
 .TP
 .B contentlengthupload
