@@ -347,7 +347,7 @@ allows you to have a TclCurl built to support a wide range of protocols but stil
 specific transfers to only be allowed to use a subset of them. 
 
 Accepted protocols are 'http', 'https', 'ftp', 'ftps', 'scp', 'sftp', 'telnet', 'ldap',
-'ldaps','dict', 'file','tftp', 'imap', 'imaps', 'pop', 'pop3', 'smtp', 'smtps', 'gopher'
+\&'ldaps', 'dict', 'file','tftp', 'imap', 'imaps', 'pop', 'pop3', 'smtp', 'smtps', 'gopher'
 and 'all'.
 
 .TP
@@ -402,7 +402,7 @@ to using port 1080 for proxies.
 .TP
 .B -proxytype
 Pass the type of  the  proxy. Available options are 'http', 'http1.0', 'socks4', 'socks4a',
-'socks5' and 'socks5h', with the HTTP one being the default.
+\&'socks5' and 'socks5h', with the HTTP one being the default.
 
 If you set it to \fIhttp1.0\fP, it will only affect how libcurl speaks to a proxy
 when CONNECT is used. The HTTP version used for "regular" HTTP requests is instead
@@ -661,7 +661,8 @@ It may use anything but basic, TclCurl will automatically select the
 one it finds most secure.
 .RE
 
-.TP -tlsauthtype
+.TP
+.B -tlsauthtype
 Use it to tell TclCurl which authentication method(s) you want it to use for TLS authentication.
 .RS
 .TP 5
@@ -961,10 +962,10 @@ response will be treated as a valid HTTP header line such as "HTTP/1.0 200 OK".
 
 .TP
 .B -cookie
-Pass a string as parameter. It will be used to
-set a cookie in the http request. The format of the string should be
-'[NAME]=[CONTENTS];'. Where NAME is the cookie name and  CONTENTS is
-what the cookie should contain.
+Pass a string as parameter.
+It will be used to set a cookie in the http request. The format of
+the string should be '[NAME]=[CONTENTS];'. Where NAME is the cookie
+name and  CONTENTS is what the cookie should contain.
 
 If  you  need  to  set mulitple cookies, you need to set them all using
 a single option and thus you need to concatenate them all in one single string.
@@ -1771,7 +1772,7 @@ are also acceptable separators but colons are normally used, , - and + can be
 used as operators. 
 
 For OpenSSL and GnuTLS valid examples of cipher lists include 'RC4-SHA', 'SHA1+DES',
-'TLSv1' and 'DEFAULT'. The default list is normally set when you compile OpenSSL.
+\&'TLSv1' and 'DEFAULT'. The default list is normally set when you compile OpenSSL.
 
 You will find more details about cipher lists on this URL:
     http://www.openssl.org/docs/apps/ciphers.html
@@ -1781,7 +1782,7 @@ etc. With NSS you don't add/remove ciphers. If you use this option then all know
 ciphers are disabled and only those passed in are enabled.
  
 You'll find more details about the NSS cipher lists on this URL:
-    http://directory.fedora.redhat.com/docs/mod_nss.html
+<http://directory.fedora.redhat.com/docs/mod_nss.html>
 
 .TP
 .B -sslsessionidcache
@@ -1976,7 +1977,7 @@ same handle. Let it return first before invoking it another time. If
 you want parallel transfers, you must use several curl handles.
 .TP
 .B RETURN VALUE
-'0' if all went well, non-zero if it didn't. In case of error, if the
+\&'0' if all went well, non-zero if it didn't. In case of error, if the
 .I errorbuffer
 was set with
 .I configure
