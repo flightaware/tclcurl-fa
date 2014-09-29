@@ -1,7 +1,7 @@
 .\" You can view this file with:
 .\" nroff -man [file]
 .\" Adapted from libcurl docs by fandom@telefonica.net
-.TH TclCurl n "3 October 2011" "TclCurl 7.22.0 "TclCurl Easy Interface"
+.TH TclCurl 3 "3 October 2011" "TclCurl 7.22.0 "TclCurl Easy Interface"
 .SH NAME
 TclCurl: - get  a  URL with FTP, FTPS, HTTP, HTTPS, SCP, SFTP, TFTP, TELNET, DICT, FILE, LDAP,
 LDAPS, IMAP, IMAPS, POP, POP3, SMTP, SMTPS and gopher syntax.
