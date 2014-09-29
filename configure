@@ -4939,7 +4939,16 @@ fi
 $as_echo "yes" >&6; }
 
 
-    vars="`$curlpath/curl-config --libs`"
+# We need to modify this original line to strip a few things
+# See: http://lists.debian.org/debian-devel-announce/2006/09/msg00018.html
+
+    vars="`$curlpath/curl-config --libs|sed \
+    -e 's/\-lkrb5\>//g' \
+    -e 's/\-lgssapi_krb5//g' \
+    -e 's/\-lk5crypto//g' \
+    -e 's/\-lkrb5support//g' \
+ `"
+
     for i in $vars; do
 	if test "${TEA_PLATFORM}" = "windows" -a "$GCC" = "yes" ; then
 	    # Convert foo.lib to -lfoo for GCC.  No-op if not *.lib

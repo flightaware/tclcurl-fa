@@ -134,7 +134,16 @@ if test "${CURL_VERSION}" != "" ; then
 fi
 AC_MSG_RESULT(yes)
 
-TEA_ADD_LIBS([`$curlpath/curl-config --libs`])
+# We need to modify this original line to strip a few things
+# See: http://lists.debian.org/debian-devel-announce/2006/09/msg00018.html
+
+TEA_ADD_LIBS([`$curlpath/curl-config --libs|sed \
+    -e 's/\-lkrb5\>//g' \
+    -e 's/\-lgssapi_krb5//g' \
+    -e 's/\-lk5crypto//g' \
+    -e 's/\-lkrb5support//g' \
+ `])
+
 
 #--------------------------------------------------------------------
 # __CHANGE__
