@@ -52,7 +52,7 @@ curl and this call MUST have a corresponding call to
 .I cleanup
 when the operation is completed.
 You should perform all your sequential file transfers using the same
-curlHandle. This enables TclCurl to use persistant connections when
+curlHandle. This enables TclCurl to use persistent connections when
 possible.
 .sp
 .B RETURN VALUE
@@ -479,7 +479,7 @@ to using the share interface instead! See \fItclcurl_share\fP.
 
 .TP
 .B -buffersize
-Pass your prefered size for the receive buffer in TclCurl. The main point of this
+Pass your preferred size for the receive buffer in TclCurl. The main point of this
 would be that the write callback gets called more often and with smaller chunks.
 This is just treated as a request, not an order. You cannot be guaranteed to
 actually get the given size.
@@ -657,7 +657,7 @@ TclCurl will automatically select the one it finds most secure.
 
 .TP
 .B anysafe
-It may use anything but basic, TclCurl will automaticly select the
+It may use anything but basic, TclCurl will automatically select the
 one it finds most secure.
 .RE
 
@@ -971,7 +971,7 @@ a single option and thus you need to concatenate them all in one single string.
 Set multiple cookies in one string like this: "name1=content1; name2=content2;"
 etc.
 
-This option sets the cookie header explictly in the outgoing request(s).
+This option sets the cookie header explicitly in the outgoing request(s).
 If multiple requests are done due to authentication, followed redirections or similar,
 they will all get this cookie passed on.
 
@@ -1467,7 +1467,7 @@ than or equal to the parameter value. Defaults to unlimited speed.
 
 .TP
 .B -maxconnects
-Sets the persistant connection cache size in all the protocols that support 
+Sets the persistent connection cache size in all the protocols that support 
 persistent conecctions. The set amount will be the maximum amount of simultaneous
 connections that TclCurl may cache in this easy handle. Default is 5, and there
 isn't much point in changing this value unless you are perfectly aware of how this
@@ -2412,7 +2412,7 @@ to pause the transfer.
 Resumes a transfer paused with \fBcurlhandle pause\fP
 
 .SH curl::transfer
-In case you do not want to use persistant connections you can use this
+In case you do not want to use persistent connections you can use this
 command, it takes the same arguments as the \fIcurlHandle\fP \fBconfigure\fP
 and will init, configure, perform and cleanup a connection for you.
 
