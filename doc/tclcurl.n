@@ -1637,6 +1637,15 @@ Force SSLv2
 .TP
 .B sslv3
 Force SSLv3
+.TP
+.B tlsv1_0
+Force TLSv1.0
+.TP
+.B tlsv1_1
+Force TLSv1.1
+.TP
+.B tlsv1_2
+Force TLSv1.2
 .RE
 
 .TP
