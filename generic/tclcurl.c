@@ -854,6 +854,15 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
                     break;
                 case 3:
                     longNumber=CURL_SSLVERSION_SSLv3;
+                    break;
+                case 4:
+                    longNumber=CURL_SSLVERSION_TLSv1_0;
+                    break;
+                case 5:
+                    longNumber=CURL_SSLVERSION_TLSv1_1;
+                    break;
+                case 6:
+                    longNumber=CURL_SSLVERSION_TLSv1_2;
             }
             tmpObjPtr=Tcl_NewLongObj(longNumber);
             if (SetoptLong(interp,curlHandle,CURLOPT_SSLVERSION,
