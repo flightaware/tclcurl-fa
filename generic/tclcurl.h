@@ -344,7 +344,7 @@ CONST static char *ftpsslccc[] = {
 };
 
 CONST static char *sslversion[] = {
-    "default", "tlsv1", "sslv2", "sslv3", (char *)NULL
+    "default", "tlsv1", "sslv2", "sslv3", "tlsv1_0", "tlsv1_1", "tlsv1_2", (char *)NULL
 };
 
 CONST static char *ftpfilemethod[] = {
