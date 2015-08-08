@@ -19,7 +19,7 @@ LDAPS, IMAP, IMAPS, POP, POP3, SMTP, SMTPS and gopher syntax.
 .sp
 .IB curlhandle " reset"
 .sp
-.IB curlHandle " duhandle"
+.IB curlHandle " duphandle"
 .sp
 .IB curlHandle " pause"
 .sp
