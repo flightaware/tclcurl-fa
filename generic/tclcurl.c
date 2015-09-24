@@ -748,8 +748,13 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
 /*                        fprintf(stdout,"Section contents: %s\n",Tcl_GetString(httpPostData[i+1]));*/
                         tmpStr=Tcl_GetStringFromObj(httpPostData[i+1],&curlformBufferSize);
                         formArray[formArrayIndex].option = CURLFORM_COPYCONTENTS;
-                        formArray[formArrayIndex].value  = (char *)
-                                memcpy(Tcl_Alloc(curlformBufferSize), tmpStr, curlformBufferSize);
+
+                        formArray[formArrayIndex].value = Tcl_Alloc((curlformBufferSize > 0) ? curlformBufferSize : 1);
+                        if (curlformBufferSize > 0) {
+                                memcpy((char *)formArray[formArrayIndex].value,tmpStr,curlformBufferSize);
+                        } else {
+                                memset((char *)formArray[formArrayIndex].value,0,1);
+                        }
 
                         formArrayIndex++;
                         formArray[formArrayIndex].option = CURLFORM_CONTENTSLENGTH;
