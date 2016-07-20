@@ -294,7 +294,13 @@ CONST static char   *curlFormTable[]={
 };
 
 CONST static char   *httpVersionTable[] = {
-    "none", "1.0", "1.1", (char *)NULL
+    "none",  /* CURL_HTTP_VERSION_NONE */
+    "1.0",  /* CURL_HTTP_VERSION_1_0 */
+    "1.1",  /* CURL_HTTP_VERSION_1_1 */
+    "2.0",  /* CURL_HTTP_VERSION_2_0 */
+    "2TLS",  /* CURL_HTTP_VERSION_2TLS */
+    "2_PRIOR_KNOWLEDGE",  /* CURL_HTTP_VERSION_2_PRIOR_KNOWLEDGE */
+    (char *)NULL
 };
 
 CONST static char *netrcTable[] = {
