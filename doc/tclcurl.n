@@ -1047,6 +1047,15 @@ Enforce HTTP 1.0 requests.
 .TP
 .B 1.1
 Enforce HTTP 1.1 requests.
+.TP
+.B 2.0
+Enforce HTTP version 2 requests.
+.TP
+.B 2TLS
+Enforce version 2 requests for HTTPS, version 1.1 for HTTP.
+.TP
+.B 2_PRIOR_KNOWLEDGE
+Enforce HTTP 2 requests without performing HTTP/1.1 Upgrade first.
 .RE
 
 .TP
