@@ -465,6 +465,12 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
         case 1:
             Tcl_Free(curlData->outFile);
             curlData->outFile=curlstrdup(Tcl_GetString(objv));
+            if (curlData->outFlag) {
+                if (curlData->outHandle!=NULL) {
+                    fclose(curlData->outHandle);
+                    curlData->outHandle=NULL;
+                }
+            }
             if ((strcmp(curlData->outFile,""))&&(strcmp(curlData->outFile,"stdout"))) {
                 curlData->outFlag=1;
             } else {
@@ -1064,6 +1070,14 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
         case 62:
             Tcl_Free(curlData->bodyVarName);
             curlData->bodyVarName=curlstrdup(Tcl_GetString(objv));
+            if (curlData->outFlag) {
+                if (curlData->outHandle!=NULL) {
+                    fclose(curlData->outHandle);
+                    curlData->outHandle=NULL;
+                }
+                curl_easy_setopt(curlHandle,CURLOPT_WRITEDATA,NULL);
+            }
+            curlData->outFlag=0;
             if (curl_easy_setopt(curlHandle,CURLOPT_WRITEFUNCTION,
                     curlBodyReader)) {
                 return TCL_ERROR;
@@ -1101,6 +1115,13 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
             break;
         case 65:
             curlData->writeProc=curlstrdup(Tcl_GetString(objv));
+            if (curlData->outFlag) {
+                if (curlData->outHandle!=NULL) {
+                    fclose(curlData->outHandle);
+                    curlData->outHandle=NULL;
+                }
+                curl_easy_setopt(curlHandle,CURLOPT_WRITEDATA,NULL);
+	    }
             curlData->outFlag=0;
             if (curl_easy_setopt(curlHandle,CURLOPT_WRITEFUNCTION,
                     curlWriteProcInvoke)) {
