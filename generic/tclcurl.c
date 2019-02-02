@@ -2990,7 +2990,7 @@ curlDebugProcInvoke(CURL *curlHandle, curl_infotype infoType,
     Tcl_Obj             *objv[3];
     char                tclCommand[300];
 
-    snprintf(tclCommand,300,"%s %d %d",curlData->debugProc,infoType,size);
+    snprintf(tclCommand,300,"%s %d %d",curlData->debugProc,(int)infoType,(int)size);
     tclProcPtr=Tcl_NewStringObj(tclCommand,-1);
 
     objv[0]=Tcl_NewStringObj(curlData->debugProc,-1);
@@ -4283,16 +4283,16 @@ curlShareLockFunc (CURL *handle, curl_lock_data data, curl_lock_access access
         , void *userptr) {
 
     switch(data) {
-        CURL_LOCK_DATA_COOKIE:
+        case CURL_LOCK_DATA_COOKIE:
             Tcl_MutexLock(&cookieLock);
             break;
-        CURL_LOCK_DATA_DNS:
+        case CURL_LOCK_DATA_DNS:
             Tcl_MutexLock(&dnsLock);
             break;
-        CURL_LOCK_DATA_SSL_SESSION:
+        case CURL_LOCK_DATA_SSL_SESSION:
             Tcl_MutexLock(&sslLock);
             break;
-        CURL_LOCK_DATA_CONNECT:
+        case CURL_LOCK_DATA_CONNECT:
             Tcl_MutexLock(&connectLock);
             break;
         default:
@@ -4318,16 +4318,16 @@ void
 curlShareUnLockFunc(CURL *handle, curl_lock_data data, void *userptr) {
 
     switch(data) {
-        CURL_LOCK_DATA_COOKIE:
+        case CURL_LOCK_DATA_COOKIE:
             Tcl_MutexUnlock(&cookieLock);
             break;
-        CURL_LOCK_DATA_DNS:
+        case CURL_LOCK_DATA_DNS:
             Tcl_MutexUnlock(&dnsLock);
             break;
-        CURL_LOCK_DATA_SSL_SESSION:
+        case CURL_LOCK_DATA_SSL_SESSION:
             Tcl_MutexUnlock(&sslLock);
             break;
-        CURL_LOCK_DATA_CONNECT:
+        case CURL_LOCK_DATA_CONNECT:
             Tcl_MutexUnlock(&connectLock);
             break;
         default:
