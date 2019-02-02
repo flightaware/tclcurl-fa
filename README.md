@@ -13,21 +13,21 @@ To make type:
       make
       make install
 
-The configure script will deduce $PREFIX from the tcl installation.
-The generated Makefile uses the file $PREFIX/lib/tclConfig.sh that was left by
+The configure script will deduce `$PREFIX` from the tcl installation.
+The generated `Makefile` uses the file `$PREFIX/lib/tclConfig.sh` that was left by
 the make of tcl for most of its configuration parameters.
 
-There is another README to explain how to compile in Windows.
+There is another file, ReadMeW32.txt, to explain how to compile in Windows.
 
 ## Troubleshooting
 
 If you are running Red Hat or Fedora and you are compiling from source,
-make sure the directory '/usr/local/lib' is listed in '/etc/ld.so.conf',
+make sure the directory `/usr/local/lib` is listed in `/etc/ld.so.conf`,
 if it isn't add it before installing cURL.
 
 If the configure script doesn't detect Tcl even though it is there, it
-is probably because there is no 'tclConfig.sh' file, maybe you need
-to install a 'tcl-devel' package or maybe it would be a good idea
+is probably because there is no `tclConfig.sh` file, maybe you need
+to install a `tcl-devel` package or maybe it would be a good idea
 to download the latest version, and install that.
 
 ## Usage
