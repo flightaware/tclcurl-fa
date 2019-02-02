@@ -19,7 +19,7 @@ test 1.03 {: Test that -features returns something} -body {
 
 test 1.04 {: Test that -sslversion returns something} -body {
 	return [curl::versioninfo -sslversion]
-} -match regexp -result {^(OpenSSL|GnuTLS)/\d+\.\d+\.\d+\w*$}
+} -match regexp -result {^(OpenSSL|GnuTLS|LibreSSL)/\d+\.\d+\.\d+\w*$}
 
 test 1.05 {: Test that -sslversionnum returns something} -body {
 	return [curl::versioninfo -sslversionnum]
