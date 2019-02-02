@@ -232,7 +232,7 @@ install-doc: doc
 	@echo "Installing documentation in $(DESTDIR)$(mandir)"
 	@list='$(srcdir)/doc/*.n'; for i in $$list; do \
 	    echo "Installing $$i"; \
-    	    rm -f $(DESTDIR)$(mandir)/mann/`basename $$i`; \
+	    rm -f $(DESTDIR)$(mandir)/mann/`basename $$i`; \
 	    gzip $$i; \
 	    $(INSTALL_DATA) $$i.gz $(DESTDIR)$(mandir)/mann ; \
 	    gunzip $$i.gz; \
@@ -395,7 +395,7 @@ install-lib-binaries: binaries
 	done
 	@if test "x$(SHARED_BUILD)" = "x1"; then \
 	    echo " Install pkgIndex.tcl $(DESTDIR)$(pkglibdir)"; \
-	    $(INSTALL_DATA) pkgIndex.tcl $(DESTDIR)$(pkglibdir); \
+	    $(INSTALL_DATA) $(srcdir)/pkgIndex.tcl $(DESTDIR)$(pkglibdir); \
 	fi
 
 #========================================================================
@@ -423,7 +423,7 @@ install-bin-binaries: binaries
 install-scripts: scripts
 		@for i in generic/$(TCLCURL_SCRIPTS) ; do    \
 		echo "Installing $$i" ;                      \
-		$(INSTALL_DATA) $$i $(DESTDIR)$(pkglibdir) ; \
+		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)$(pkglibdir) ; \
 	done;
 
 .SUFFIXES: .c .$(OBJEXT)
