@@ -1,0 +1,37 @@
+#!/usr/bin/tclsh
+
+package require TclCurl
+package require tcltest
+namespace import ::tcltest::*
+
+
+test 1.01 {: Test that -version returns something} -body {
+	return [curl::versioninfo -version]
+} -match regexp -result {^\d+\.\d+\.\d+$}
+
+test 1.02 {: Test that -versionnum returns something} -body {
+	return [curl::versioninfo -versionnum]
+} -match regexp -result {^[0-9A-F]+$}
+
+test 1.03 {: Test that -features returns something} -body {
+	return [curl::versioninfo -features]
+} -match regexp -result {^([A-Z0-9]+ ?)+$}
+
+test 1.04 {: Test that -sslversion returns something} -body {
+	return [curl::versioninfo -sslversion]
+} -match regexp -result {^(OpenSSL|GnuTLS|LibreSSL)/\d+\.\d+\.\d+\w*$}
+
+test 1.05 {: Test that -sslversionnum returns something} -body {
+	return [curl::versioninfo -sslversionnum]
+} -match regexp -result {^\d+$}
+
+test 1.06 {: Test that -libzversion returns something} -body {
+	return [curl::versioninfo -libzversion]
+} -match regexp -result {^\d+\.\d+\.\d+$}
+
+test 1.07 {: Test that -protocols returns something} -body {
+	return [curl::versioninfo -protocols]
+} -match regexp -result {^([a-z0-9]+ ?)+$}
+
+
+cleanupTests

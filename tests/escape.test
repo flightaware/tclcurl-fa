@@ -1,0 +1,19 @@
+#!/usr/local/bin/tclsh
+
+package require TclCurl
+package require tcltest
+namespace import ::tcltest::*
+
+test 1.01 {: Test escape} -body {
+	set escaped [curl::escape {What about this?}]
+	return $escaped
+} -result {What%20about%20this%3F}
+
+test 1.02 {: Test unescape} -body {
+	return [curl::unescape $escaped]
+} -result {What about this?}
+
+
+cleanupTests
+
+
