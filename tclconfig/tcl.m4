@@ -936,7 +936,7 @@ AC_DEFUN([TEA_ENABLE_SYMBOLS], [
 	fi
     fi
     # TEA specific:
-    if test "${TEA_PLATFORM}" != "windows" ; then
+    if test "${TEA_PLATFORM}" != "windows" -o "$GCC" = "yes"; then
 	LDFLAGS_DEFAULT="${LDFLAGS}"
     fi
     AC_SUBST(CFLAGS_DEFAULT)
@@ -1242,7 +1242,7 @@ AC_DEFUN([TEA_CONFIG_CFLAGS], [
 		AC_CHECK_TOOL(RC, windres)
 		CFLAGS_DEBUG="-g"
 		CFLAGS_OPTIMIZE="-O2 -fomit-frame-pointer"
-		SHLIB_LD='${CC} -shared'
+		SHLIB_LD='${CC} ${CFLAGS} ${LDFLAGS_DEFAULT} -shared'
 		UNSHARED_LIB_SUFFIX='${TCL_TRIM_DOTS}.a'
 		LDFLAGS_CONSOLE="-wl,--subsystem,console ${lflags}"
 		LDFLAGS_WINDOW="-wl,--subsystem,windows ${lflags}"
