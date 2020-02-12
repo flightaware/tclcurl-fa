@@ -57,7 +57,7 @@ Tclcurl_Init (Tcl_Interp *interp) {
 
     Tclcurl_MultiInit(interp);
 
-    Tcl_PkgProvide(interp,"TclCurl","7.22.0");
+    Tcl_PkgProvide(interp,"TclCurl",PACKAGE_VERSION);
 
     return TCL_OK;
 }
