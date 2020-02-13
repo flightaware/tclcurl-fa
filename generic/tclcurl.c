@@ -11,6 +11,12 @@
  *
  */
 
+#ifdef _WIN32
+#define UNICODE
+#define _UNICODE
+#include <tchar.h>
+#endif
+
 #include "tclcurl.h"
 
 #include <sys/types.h>
@@ -3971,22 +3977,30 @@ curlOpenFile(Tcl_Interp *interp,char *fileName, FILE **handle, int writing, int 
     Tcl_Obj        *resultObjPtr;
     char            errorMsg[300];
 
+#ifdef _WIN32
+    Tcl_DString     nativeString;
+    TCHAR          *nativeFile=Tcl_WinUtfToTChar(fileName,-1,&nativeString);
+#endif
+
     if (*handle!=NULL) {
         fclose(*handle);
     }
     if (writing==1) {
-        if (text==1) {
-            *handle=fopen(fileName,"w");
-        } else {
-            *handle=fopen(fileName,"wb");
-        }
+#ifdef _WIN32
+        *handle=_tfopen(nativeFile, text==1 ? _T("w") : _T("wb"));
+#else
+        *handle=fopen(fileName, text==1 ? "w" : "wb");
+#endif
     } else {
-        if (text==1) {
-            *handle=fopen(fileName,"r");
-        } else {
-            *handle=fopen(fileName,"rb");
-        }
+#ifdef _WIN32
+        *handle=_tfopen(nativeFile, text==1 ? _T("r") : _T("rb"));
+#else
+        *handle=fopen(fileName, text==1 ? "r" : "rb");
+#endif
     }
+#ifdef _WIN32
+    Tcl_DStringFree(&nativeString);
+#endif
     if (*handle==NULL) {
         snprintf(errorMsg,300,"Couldn't open file %s.",fileName);
         resultObjPtr=Tcl_NewStringObj(errorMsg,-1);
