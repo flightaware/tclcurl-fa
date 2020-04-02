@@ -702,6 +702,12 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
                 return TCL_ERROR;
             }
             break;
+        case 32:
+            if (SetoptCurlOffT(interp,curlHandle,CURLOPT_POSTFIELDSIZE_LARGE,
+                        tableIndex,objv)) {
+                return TCL_ERROR;
+            }
+            break;
         case 33:
             if (SetoptChar(interp,curlHandle,
                     CURLOPT_FTPPORT,tableIndex,objv)) {
