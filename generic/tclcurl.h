@@ -196,8 +196,8 @@ CONST static char *optionTable[] = {
     "CURLOPT_MAIL_RCPT",      "CURLOPT_FTP_USE_PRET",   "CURLOPT_WILDCARDMATCH",
     "CURLOPT_CHUNK_BGN_PROC", "CURLOPT_CHUNK_BGN_VAR",  "CURLOPT_CHUNK_END_PROC",
     "CURLOPT_FNMATCH_PROC",   "CURLOPT_RESOLVE",        "CURLOPT_TLSAUTH_USERNAME",
-    "CURLOPT_TLSAUTH_PASSWORD","CURLOPT_GSSAPI_DELEGATION", "CURLOPT_NOPROXY",
-    "CURLOPT_TELNETOPTIONS",
+    "CURLOPT_TLSAUTH_PASSWORD", "CURLOPT_TLSAUTH_TYPE", "CURLOPT_TRANSFER_ENCODING",
+    "CURLOPT_GSSAPI_DELEGATION", "CURLOPT_NOPROXY",     "CURLOPT_TELNETOPTIONS",
     (char *)NULL
 };
 
@@ -261,8 +261,8 @@ CONST static char *configTable[] = {
     "-mailrcpt",          "-ftpusepret",         "-wildcardmatch",
     "-chunkbgnproc",      "-chunkbgnvar",        "-chunkendproc",
     "-fnmatchproc",       "-resolve",            "-tlsauthusername",
-    "-tlsauthpassword",   "-gssapidelegation",   "-noproxy",
-    "-telnetoptions",
+    "-tlsauthpassword",   "-tlsauthtype",        "-transferencoding",
+    "-gssapidelegation",  "-noproxy",            "-telnetoptions",
     (char *) NULL
 };
 
