@@ -880,6 +880,24 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
                     break;
                 case 6:
                     longNumber=CURL_SSLVERSION_TLSv1_2;
+                    break;
+                case 7:
+                    longNumber=CURL_SSLVERSION_TLSv1_3;
+                    break;
+                case 8:
+                    longNumber=CURL_SSLVERSION_MAX_DEFAULT;
+                    break;
+                case 9:
+                    longNumber=CURL_SSLVERSION_MAX_TLSv1_0;
+                    break;
+                case 10:
+                    longNumber=CURL_SSLVERSION_MAX_TLSv1_1;
+                    break;
+                case 11:
+                    longNumber=CURL_SSLVERSION_MAX_TLSv1_2;
+                    break;
+                case 12:
+                    longNumber=CURL_SSLVERSION_MAX_TLSv1_3;
             }
             tmpObjPtr=Tcl_NewLongObj(longNumber);
             if (SetoptLong(interp,curlHandle,CURLOPT_SSLVERSION,
