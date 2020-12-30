@@ -1639,7 +1639,7 @@ The default action. This will attempt to figure out the remote SSL protocol vers
 i.e. either SSLv3 or TLSv1 (but not SSLv2, which became disabled by default with 7.18.1). 
 .TP
 .B tlsv1
-Force TLSv1
+Force TLSv1 or later
 .TP
 .B sslv2
 Force SSLv2
@@ -1648,13 +1648,31 @@ Force SSLv2
 Force SSLv3
 .TP
 .B tlsv1_0
-Force TLSv1.0
+Force TLSv1.0 or later
 .TP
 .B tlsv1_1
-Force TLSv1.1
+Force TLSv1.1 or later
 .TP
 .B tlsv1_2
-Force TLSv1.2
+Force TLSv1.2 or later
+.TP
+.B tlsv1_3
+Force TLSv1.3 or later
+.TP
+.B maxdefault
+Use the maximum supported TLS version by libcurl or the default value from the SSL library.
+.TP
+.B maxtlsv1_0
+Define maximum supported TLS version as TLSv1.0
+.TP
+.B maxtlsv1_1
+Define maximum supported TLS version as TLSv1.1
+.TP
+.B maxtlsv1_2
+Define maximum supported TLS version as TLSv1.2
+.TP
+.B maxtlsv1_3
+Define maximum supported TLS version as TLSv1.3
 .RE
 
 .TP
