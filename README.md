@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/flightaware/tclcurl-fa.svg?branch=master)](https://travis-ci.org/flightaware/tclcurl-fa)
+![Linux CI](https://github.com/flightaware/tclcurl-fa/workflows/Linux%20CI/badge.svg)
 
 # TclCurl - get a URL with FTP, TELNET, LDAP, DICT, FILE, HTTP or HTTPS syntax.
 
