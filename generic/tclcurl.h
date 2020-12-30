@@ -145,7 +145,7 @@ CONST static char *optionTable[] = {
     "CURLOPT_FOLLOWLOCATION","CURLOPT_TRANSFERTEXT",    "CURLOPT_PUT",
     "CURLOPT_MUTE",          "CURLOPT_USERPWD",         "CURLOPT_PROXYUSERPWD",
     "CURLOPT_RANGE",         "CURLOPT_ERRORBUFFER",     "CURLOPT_HTTPGET",
-    "CURLOPT_POST",          "CURLOPT_POSTFIELDS",      "CURLOPT_POSTFIELDSIZE",
+    "CURLOPT_POST",          "CURLOPT_POSTFIELDS",      "CURLOPT_POSTFIELDSIZE_LARGE",
     "CURLOPT_FTPPORT",       "CURLOPT_COOKIE",          "CURLOPT_COOKIEFILE",
     "CURLOPT_HTTPHEADER",    "CURLOPT_HTTPPOST",        "CURLOPT_SSLCERT",
     "CURLOPT_SSLCERTPASSWD", "CURLOPT_SSLVERSION",      "CURLOPT_CRLF",
@@ -191,13 +191,13 @@ CONST static char *optionTable[] = {
     "CURLOPT_POSTREDIR",      "CURLOPT_USERNAME",       "CURLOPT_PASSWORD",
     "CURLOPT_PROXYUSERNAME",  "CURLOPT_PROXYPASSWORD",  "CURLOPT_TFTP_BLKSIZE",
     "CURLOPT_SOCKS5_GSSAPI_SERVICE",                    "CURLOPT_SOCKS5_GSSAPI_NEC",
-    "CURLOPT_PROTOCOLS",      "CURLOPT_REDIR_PROTOCOLS","CURLOPT_FTP_SSL_CC",
+    "CURLOPT_PROTOCOLS",      "CURLOPT_REDIR_PROTOCOLS","CURLOPT_FTP_SSL_CCC",
     "CURLOPT_SSH_KNOWNHOSTS", "CURLOPT_SSH_KEYFUNCTION","CURLOPT_MAIL_FROM",
     "CURLOPT_MAIL_RCPT",      "CURLOPT_FTP_USE_PRET",   "CURLOPT_WILDCARDMATCH",
     "CURLOPT_CHUNK_BGN_PROC", "CURLOPT_CHUNK_BGN_VAR",  "CURLOPT_CHUNK_END_PROC",
     "CURLOPT_FNMATCH_PROC",   "CURLOPT_RESOLVE",        "CURLOPT_TLSAUTH_USERNAME",
-    "CURLOPT_TLSAUTH_PASSWORD","CURLOPT_GSSAPI_DELEGATION", "CURLOPT_NOPROXY",
-    "CURLOPT_TELNETOPTIONS",
+    "CURLOPT_TLSAUTH_PASSWORD", "CURLOPT_TLSAUTH_TYPE", "CURLOPT_TRANSFER_ENCODING",
+    "CURLOPT_GSSAPI_DELEGATION", "CURLOPT_NOPROXY",     "CURLOPT_TELNETOPTIONS",
     (char *)NULL
 };
 
@@ -212,7 +212,7 @@ CONST static char *configTable[] = {
     "-followlocation",    "-transfertext",       "-put",
     "-mute",              "-userpwd",            "-proxyuserpwd",
     "-range",             "-errorbuffer",        "-httpget",
-    "-post",              "-postfields",         "-postfieldssize",
+    "-post",              "-postfields",         "-postfieldsize",
     "-ftpport",           "-cookie",             "-cookiefile",
     "-httpheader",        "-httppost",           "-sslcert",
     "-sslcertpasswd",     "-sslversion",         "-crlf",
@@ -256,13 +256,13 @@ CONST static char *configTable[] = {
     "-certinfo",          "-postredir",          "-username",
     "-password",          "-proxyuser",          "-proxypassword",
     "-tftpblksize",       "-socks5gssapiservice","-socks5gssapinec",
-    "-protocols",         "-redirprotocols",     "-ftpsslcc",
+    "-protocols",         "-redirprotocols",     "-ftpsslccc",
     "-sshknownhosts",     "-sshkeyproc",         "-mailfrom",
     "-mailrcpt",          "-ftpusepret",         "-wildcardmatch",
     "-chunkbgnproc",      "-chunkbgnvar",        "-chunkendproc",
     "-fnmatchproc",       "-resolve",            "-tlsauthusername",
-    "-tlsauthpassword",   "-gssapidelegation",   "-noproxy",
-    "-telnetoptions",
+    "-tlsauthpassword",   "-tlsauthtype",        "-transferencoding",
+    "-gssapidelegation",  "-noproxy",            "-telnetoptions",
     (char *) NULL
 };
 

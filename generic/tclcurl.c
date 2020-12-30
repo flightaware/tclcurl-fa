@@ -708,6 +708,12 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
                 return TCL_ERROR;
             }
             break;
+        case 32:
+            if (SetoptCurlOffT(interp,curlHandle,CURLOPT_POSTFIELDSIZE_LARGE,
+                        tableIndex,objv)) {
+                return TCL_ERROR;
+            }
+            break;
         case 33:
             if (SetoptChar(interp,curlHandle,
                     CURLOPT_FTPPORT,tableIndex,objv)) {
@@ -2243,8 +2249,7 @@ SetoptLong(Tcl_Interp *interp,CURL *curlHandle,CURLoption opt,
  *
  * curlSetoptCurlOffT --
  *
- *  Set the curl options that require a curl_off_t, even if we really
- *  use a long to do it. (Cutting and pasting at its worst)
+ *  Set the curl options that require a curl_off_t
  *
  * Parameter:
  *  interp: The interpreter we are working with.
@@ -2260,17 +2265,17 @@ SetoptLong(Tcl_Interp *interp,CURL *curlHandle,CURLoption opt,
 int
 SetoptCurlOffT(Tcl_Interp *interp,CURL *curlHandle,CURLoption opt,
         int tableIndex,Tcl_Obj *tclObj) {
-    long        longNumber;
+    Tcl_WideInt wideNumber;
     char        *parPtr;
 
-    if (Tcl_GetLongFromObj(interp,tclObj,&longNumber)) {
+    if (Tcl_GetWideIntFromObj(interp,tclObj,&wideNumber)) {
         parPtr=curlstrdup(Tcl_GetString(tclObj));
         curlErrorSetOpt(interp,configTable,tableIndex,parPtr);
         Tcl_Free(parPtr);
         return 1;
     }
 
-    if (curl_easy_setopt(curlHandle,opt,(curl_off_t)longNumber)) {
+    if (curl_easy_setopt(curlHandle,opt,(curl_off_t)wideNumber)) {
         parPtr=curlstrdup(Tcl_GetString(tclObj));
         curlErrorSetOpt(interp,configTable,tableIndex,parPtr);
         Tcl_Free(parPtr);
