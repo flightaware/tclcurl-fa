@@ -20,7 +20,9 @@
 #include "tclcurl.h"
 
 #include <sys/types.h>
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 
 /*
  *----------------------------------------------------------------------
@@ -35,7 +37,7 @@
  *----------------------------------------------------------------------
  */
 
-int
+EXTERN int
 Tclcurl_Init (Tcl_Interp *interp) {
 
     if(Tcl_InitStubs(interp,"8.1",0)==NULL) {

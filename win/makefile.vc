@@ -1,0 +1,51 @@
+#------------------------------------------------------------- -*- makefile -*-
+#
+# Makefile for TclCurl
+#
+# Example build:
+#   nmake /f makefile.vc INSTALLDIR=d:\tcl\debug\x64 CURLDIR=D:\src\curl-7.74.0\builds\libcurl-vc15-x64-release-static-zlib-static-ipv6-sspi-schannel CURLDEPSDIR=D:\src\curl-7.74.0\deps\x64
+#   nmake /f makefile.vc INSTALLDIR=d:\tcl\debug\x64 CURLDIR=D:\src\curl-7.74.0\builds\libcurl-vc15-x64-release-static-zlib-static-ipv6-sspi-schannel CURLDEPSDIR=D:\src\curl-7.74.0\deps\x64 install
+#
+# For other build options (debug, static etc.),
+# See TIP 477 (https://core.tcl.tk/tips/doc/trunk/tip/477.md) for
+# detailed documentation.
+#
+#
+# This makefile assumes static linking to the curl libraries
+#------------------------------------------------------------------------------
+
+PROJECT = TclCurl
+
+# Script files (LIBDIR) are in same location as C generic files
+# NOTE: define this BEFORE including rules-ext.vc
+LIBDIR = $(GENERICDIR)
+
+!include "rules-ext.vc"
+
+PRJ_OBJS = \
+	$(TMP_DIR)\tclcurl.obj     \
+	$(TMP_DIR)\multi.obj
+
+PRJ_DEFINES = -D _CRT_SECURE_NO_DEPRECATE -D _CRT_NONSTDC_NO_DEPRECATE
+
+!if "$(CURLDIR)" == ""
+!error Please define CURLDIR on command line to point to CURL distribution containing lib and include dirs.
+!endif
+
+# Curl dependencies directory.
+!if "$(CURLDEPSDIR)" == ""
+!error Please define CURLDEPDIR on command line to point to CURL dependencies containing lib and include dirs.
+!endif
+
+PRJ_INCLUDES = $(PRJ_INCLUDES) -I"$(CURLDIR)\include" -I"$(CURLDEPSDIR)\include"
+PRJ_LIBS = $(PRJ_LIBS) "$(CURLDIR)\lib\libcurl_a.lib" "$(CURLDEPSDIR)\lib\zlib_a.lib" ws2_32.lib crypt32.lib wldap32.lib Normaliz.lib
+
+!include "$(_RULESDIR)\targets.vc"
+
+install:    default-install-docs-html default-install-libraries
+
+pkgindex:
+        @type << >"$(OUT_DIR)\pkgIndex.tcl"
+    package ifneeded $(PROJECT) $(DOTVERSION) "[list load [file join $$dir $(PRJLIBNAME)] TclCurl]; [list source [file join $$dir tclcurl.tcl]]"
+<<
+
