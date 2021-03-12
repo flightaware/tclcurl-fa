@@ -1,0 +1,84 @@
+name: Windows CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  # Path to the solution file relative to the root of the project.
+  SOLUTION_FILE_PATH: .
+
+  # Configuration type to build.
+  # You can convert this to a build matrix if you need coverage of multiple configuration types.
+  # https://docs.github.com/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+  BUILD_CONFIGURATION: Release
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout tclcurl
+      uses: actions/checkout@v2
+      with:
+        path: tclcurl
+
+    - name: Checkout tcl
+      uses: actions/checkout@v2
+      with:
+        repository: tcltk/tcl
+        ref: core-8-6-11
+        path: tcl
+
+#    - name: Init MSVC
+#      uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Add MS compiler tools
+      uses: microsoft/setup-msbuild@v1
+
+#    - name: Restore NuGet packages
+#      working-directory: ${{env.GITHUB_WORKSPACE}}
+#      run: nuget restore ${{env.SOLUTION_FILE_PATH}}
+
+#    - name: Install dependencies with nuget
+#      run: nuget install curl
+# https://www.nuget.org/packages/curl
+# https://www.nuget.org/packages/rmt_curl/
+
+#    - name: Install dependencies with vcpkg
+#      uses: lukka/run-vcpkg@v7.1
+#      with:
+#        vcpkgArguments: 'tcl curl'
+#        vcpkgDirectory: '${{ github.workspace }}/vcpkg'
+
+# https://github.com/microsoft/vcpkg/tree/master/ports/tcl
+# https://github.com/microsoft/vcpkg/tree/master/ports/curl
+
+    - name: Install dependencies with vcpkg
+      run: vcpkg install zlib curl
+
+
+
+#git clone https://github.com/Microsoft/vcpkg.git
+#cd vcpkg
+#./bootstrap-vcpkg.sh
+#./vcpkg integrate install
+#vcpkg install curl[tool]
+      
+    - name: Build Tcl
+      working-directory: ${{env.GITHUB_WORKSPACE}}/tcl/win
+      shell: cmd
+      run: |
+        nmake /f makefile.vc INSTALLDIR=C:\tcl
+        nmake /f makefile.vc INSTALLDIR=C:\tcl install
+
+    - name: Build tclcurl
+      working-directory: ${{env.GITHUB_WORKSPACE}}/tcl/win
+      shell: cmd
+      run: |
+        nmake /f makefile.vc INSTALLDIR=C:\tcl CURLDIR=C:\vcpkg\packages\curl_x64-windows CURLDEPSDIR=C:\vcpkg\packages\zlib_x64-windows
+        nmake /f makefile.vc INSTALLDIR=C:\tcl CURLDIR=C:\vcpkg\packages\curl_x64-windows CURLDEPSDIR=C:\vcpkg\packages\zlib_x64-windows install
+
+
