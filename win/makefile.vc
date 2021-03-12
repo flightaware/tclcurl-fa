@@ -32,6 +32,9 @@ PROJECT = TclCurl
 !endif
 !include nmakehlp.out
 
+# Some Curls (from vcpkg e.g.) have -DEV in the middle of the version
+# string (eyeroll)). Remove it.
+DOTVERSION=$(DOTVERSION:-DEV=)
 # Remove the quotes from DOTVERSION
 DOTVERSION=$(DOTVERSION:"=)
 # " - Fix for Emacs highlighting to match quotes above
