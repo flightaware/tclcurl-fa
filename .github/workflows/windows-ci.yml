@@ -55,5 +55,6 @@ jobs:
       run: |
         nmake /f makefile.vc INSTALLDIR=C:\tcl CURLDIR=C:\vcpkg\packages\curl_x64-windows-static CURLDEPSDIR=C:\vcpkg\packages\zlib_x64-windows-static
         nmake /f makefile.vc INSTALLDIR=C:\tcl CURLDIR=C:\vcpkg\packages\curl_x64-windows-static CURLDEPSDIR=C:\vcpkg\packages\zlib_x64-windows-static install
+        nmake /f makefile.vc INSTALLDIR=C:\tcl CURLDIR=C:\vcpkg\packages\curl_x64-windows-static CURLDEPSDIR=C:\vcpkg\packages\zlib_x64-windows-static test
 
 
