@@ -40,7 +40,7 @@ jobs:
 #      uses: microsoft/setup-msbuild@v1
 
     - name: Install dependencies with vcpkg
-      run: vcpkg install zlib:x64-windows curl:x64-windows
+      run: vcpkg install zlib:x64-windows-static curl:x64-windows-static
 
     - name: Build Tcl
       working-directory: tcl/win
@@ -53,7 +53,7 @@ jobs:
       working-directory: tclcurl/win
       shell: cmd
       run: |
-        nmake /f makefile.vc INSTALLDIR=C:\tcl CURLDIR=C:\vcpkg\packages\curl_x64-windows CURLDEPSDIR=C:\vcpkg\packages\zlib_x64-windows
-        nmake /f makefile.vc INSTALLDIR=C:\tcl CURLDIR=C:\vcpkg\packages\curl_x64-windows CURLDEPSDIR=C:\vcpkg\packages\zlib_x64-windows install
+        nmake /f makefile.vc INSTALLDIR=C:\tcl CURLDIR=C:\vcpkg\packages\curl_x64-windows-static CURLDEPSDIR=C:\vcpkg\packages\zlib_x64-windows-static
+        nmake /f makefile.vc INSTALLDIR=C:\tcl CURLDIR=C:\vcpkg\packages\curl_x64-windows-static CURLDEPSDIR=C:\vcpkg\packages\zlib_x64-windows-static install
 
 
