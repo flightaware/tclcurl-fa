@@ -32,13 +32,13 @@ jobs:
         ref: core-8-6-11
         path: tcl
 
-#    - name: Init MSVC
-#      uses: ilammy/msvc-dev-cmd@v1
+    - name: Init MSVC
+      uses: ilammy/msvc-dev-cmd@v1
 
-    - name: Add MS compiler tools
+#    - name: Add MS compiler tools
       uses: microsoft/setup-msbuild@v1
 
-    - name: Install dependencies with vcpkg
+#    - name: Install dependencies with vcpkg
       run: vcpkg install zlib curl
 
     - name: Build Tcl
