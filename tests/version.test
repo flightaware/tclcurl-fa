@@ -6,6 +6,6 @@ test 1.01 {: Test that curl::version returns something} -body {
 	set result [curl::version]
 
 	return $result
-} -match regexp -result {^TclCurl Version \d+\.\d+\.\d+ \(libcurl/\d+\.\d+\.\d+ .*?\)$}
+} -match regexp -result {^TclCurl Version \d+\.\d+\.\d+(-DEV)? \(libcurl/\d+\.\d+\.\d+ .*?\)$}
 
 cleanupTests

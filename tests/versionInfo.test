@@ -7,7 +7,7 @@ namespace import ::tcltest::*
 
 test 1.01 {: Test that -version returns something} -body {
 	return [curl::versioninfo -version]
-} -match regexp -result {^\d+\.\d+\.\d+$}
+} -match regexp -result {^\d+\.\d+\.\d+(-DEV)?$}
 
 test 1.02 {: Test that -versionnum returns something} -body {
 	return [curl::versioninfo -versionnum]
