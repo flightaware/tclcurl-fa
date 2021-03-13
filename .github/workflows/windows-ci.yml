@@ -37,12 +37,16 @@ jobs:
       uses: ilammy/msvc-dev-cmd@v1
 
     -name: Cache vcpkg curl dependency
-      path: C:/vcpkg/packages/curl_x64-windows-static
-      key: ${{ runner.os }}-vcpkgcurl
+      uses: actions/cache@v2
+      with:
+        path: C:/vcpkg/packages/curl_x64-windows-static
+        key: ${{ runner.os }}-vcpkgcurl
 
     -name: Cache vcpkg zlib dependency
-      path: C:/vcpkg/packages/zlib_x64-windows-static
-      key: ${{ runner.os }}-vcpkgzlib
+      uses: actions/cache@v2
+      with:
+        path: C:/vcpkg/packages/zlib_x64-windows-static
+        key: ${{ runner.os }}-vcpkgzlib
 
     - name: Install dependencies with vcpkg
       run: vcpkg install zlib:x64-windows-static curl:x64-windows-static
