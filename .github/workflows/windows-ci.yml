@@ -60,19 +60,34 @@ jobs:
       if: steps.curl-cache.outputs.cache-hit != 'true'
       run: vcpkg install curl:x64-windows-static
 
+    - name: Cache Tcl build
+      id: tcl-cache
+      uses: actions/cache@v2
+      with:
+        path: C:/tcl
+        key: ${{ runner.os }}-vcpkgzlib
+
     - name: Build Tcl
+      if: steps.tcl-cache.outputs.cache-hit != 'true'
       working-directory: tcl/win
       shell: cmd
       run: |
         nmake /f makefile.vc INSTALLDIR=C:\tcl
         nmake /f makefile.vc INSTALLDIR=C:\tcl install
 
-    - name: Build tclcurl
+    - name: make
       working-directory: tclcurl/win
       shell: cmd
-      run: |
-        nmake /f makefile.vc INSTALLDIR=C:\tcl CURLDIR=C:\vcpkg\packages\curl_x64-windows-static CURLDEPSDIR=C:\vcpkg\packages\zlib_x64-windows-static
-        nmake /f makefile.vc INSTALLDIR=C:\tcl CURLDIR=C:\vcpkg\packages\curl_x64-windows-static CURLDEPSDIR=C:\vcpkg\packages\zlib_x64-windows-static install
-        nmake /f makefile.vc INSTALLDIR=C:\tcl CURLDIR=C:\vcpkg\packages\curl_x64-windows-static CURLDEPSDIR=C:\vcpkg\packages\zlib_x64-windows-static test
+      run: nmake /f makefile.vc INSTALLDIR=C:\tcl CURLDIR=C:\vcpkg\packages\curl_x64-windows-static CURLDEPSDIR=C:\vcpkg\packages\zlib_x64-windows-static
+
+    - name: install
+      working-directory: tclcurl/win
+      shell: cmd
+      run:  nmake /f makefile.vc INSTALLDIR=C:\tcl CURLDIR=C:\vcpkg\packages\curl_x64-windows-static CURLDEPSDIR=C:\vcpkg\packages\zlib_x64-windows-static install
+
+    - name: test
+      working-directory: tclcurl/win
+      shell: cmd
+      run: nmake /f makefile.vc INSTALLDIR=C:\tcl CURLDIR=C:\vcpkg\packages\curl_x64-windows-static CURLDEPSDIR=C:\vcpkg\packages\zlib_x64-windows-static test
 
 
