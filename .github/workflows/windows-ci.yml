@@ -36,13 +36,13 @@ jobs:
     - name: Init MSVC
       uses: ilammy/msvc-dev-cmd@v1
 
-    -name: Cache vcpkg curl dependency
+    - name: Cache vcpkg curl dependency
       uses: actions/cache@v2
       with:
         path: C:/vcpkg/packages/curl_x64-windows-static
         key: ${{ runner.os }}-vcpkgcurl
 
-    -name: Cache vcpkg zlib dependency
+    - name: Cache vcpkg zlib dependency
       uses: actions/cache@v2
       with:
         path: C:/vcpkg/packages/zlib_x64-windows-static
