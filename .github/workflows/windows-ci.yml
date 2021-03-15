@@ -1,0 +1,93 @@
+name: Windows CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+    branches: [ master ]
+
+# env:
+  # Path to the solution file relative to the root of the project.
+  #SOLUTION_FILE_PATH: .
+
+  # Configuration type to build.
+  # You can convert this to a build matrix if you need coverage of multiple configuration types.
+  # https://docs.github.com/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+  # BUILD_CONFIGURATION: Release
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout tclcurl
+      uses: actions/checkout@v2
+      with:
+        path: tclcurl
+
+    - name: Checkout tcl
+      uses: actions/checkout@v2
+      with:
+        repository: tcltk/tcl
+        ref: core-8-6-11
+        path: tcl
+
+    # Note msvc defaults to 64-bit
+    - name: Init MSVC
+      uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Cache vcpkg curl dependency
+      id: curl-cache
+      uses: actions/cache@v2
+      with:
+        path: C:/vcpkg/packages/curl_x64-windows-static
+        key: ${{ runner.os }}-vcpkgcurl
+
+    - name: Cache vcpkg zlib dependency
+      id: zlib-cache
+      uses: actions/cache@v2
+      with:
+        path: C:/vcpkg/packages/zlib_x64-windows-static
+        key: ${{ runner.os }}-vcpkgzlib
+
+    - name: Install zlib with vcpkg
+      if: steps.zlib-cache.outputs.cache-hit != 'true'
+      run: vcpkg install zlib:x64-windows-static
+
+    - name: Install curl with vcpkg
+      if: steps.curl-cache.outputs.cache-hit != 'true'
+      run: vcpkg install curl:x64-windows-static
+
+    - name: Cache Tcl build
+      id: tcl-cache
+      uses: actions/cache@v2
+      with:
+        path: C:/tcl
+        key: ${{ runner.os }}-vcpkgzlib
+
+    - name: Build Tcl
+      if: steps.tcl-cache.outputs.cache-hit != 'true'
+      working-directory: tcl/win
+      shell: cmd
+      run: |
+        nmake /f makefile.vc INSTALLDIR=C:\tcl
+        nmake /f makefile.vc INSTALLDIR=C:\tcl install
+
+    - name: make
+      working-directory: tclcurl/win
+      shell: cmd
+      run: nmake /f makefile.vc INSTALLDIR=C:\tcl CURLDIR=C:\vcpkg\packages\curl_x64-windows-static CURLDEPSDIR=C:\vcpkg\packages\zlib_x64-windows-static
+
+    - name: install
+      working-directory: tclcurl/win
+      shell: cmd
+      run:  nmake /f makefile.vc INSTALLDIR=C:\tcl CURLDIR=C:\vcpkg\packages\curl_x64-windows-static CURLDEPSDIR=C:\vcpkg\packages\zlib_x64-windows-static install
+
+    - name: test
+      working-directory: tclcurl/win
+      shell: cmd
+      run: nmake /f makefile.vc INSTALLDIR=C:\tcl CURLDIR=C:\vcpkg\packages\curl_x64-windows-static CURLDEPSDIR=C:\vcpkg\packages\zlib_x64-windows-static test
+
+
