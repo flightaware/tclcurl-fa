@@ -1,5 +1,6 @@
-![Linux CI](https://github.com/flightaware/tclcurl-fa/workflows/Linux%20CI/badge.svg)
-![Mac CI](https://github.com/flightaware/tclcurl-fa/workflows/Mac%20CI/badge.svg)
+[![Linux CI](https://github.com/flightaware/tclcurl-fa/actions/workflows/linux-ci.yml/badge.svg)](https://github.com/flightaware/tclcurl-fa/actions/workflows/linux-ci.yml)
+[![Mac CI](https://github.com/flightaware/tclcurl-fa/actions/workflows/mac-ci.yml/badge.svg)](https://github.com/flightaware/tclcurl-fa/actions/workflows/mac-ci.yml)
+[![Windows CI](https://github.com/flightaware/tclcurl-fa/actions/workflows/windows-ci.yml/badge.svg)](https://github.com/flightaware/tclcurl-fa/actions/workflows/windows-ci.yml)
 
 # TclCurl - get a URL with FTP, TELNET, LDAP, DICT, FILE, HTTP or HTTPS syntax.
 
