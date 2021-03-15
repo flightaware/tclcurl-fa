@@ -44,7 +44,7 @@ to download the latest version, and install that.
 
     $curlHandle duphandle
 
-    $curlhandle cleanup
+    $curlHandle cleanup
 
     curl::transfer
 
