@@ -6,8 +6,8 @@
 
 ## Introduction
 
-TclCurl gives the Tcl programmer access to the facilities of libcurl, for more information
-about what libcurl is capable of check http://curl.haxx.se.
+TclCurl gives the Tcl programmer access to the facilities of libcurl. For more information
+about what libcurl is capable of check http://curl.haxx.se/
 
 To make type:
 
@@ -38,21 +38,21 @@ to download the latest version, and install that.
 
     set curlHandle [curl::init]
 
-    curlHandle perform
+    $curlHandle perform
 
-    curlHandle getinfo curlinfo_option
+    $curlHandle getinfo curlinfo_option
 
-    curlHandle duphandle
+    $curlHandle duphandle
 
-    curlhandle cleanup
+    $curlhandle cleanup
 
     curl::transfer
 
     curl::version
 
-    curl::escape url
+    curl::escape $url
 
-    curl::unescape url
+    curl::unescape $url
 
     curl::curlConfig option
 
@@ -60,9 +60,9 @@ Check the man page for details.
 
 ## Authors
 
-Written by:  Andres Garcia (fandom@telefonica.net)
+Originally written by:  Andres Garcia (fandom@telefonica.net)
 
-Cloned from a repo once at:  https://bitbucket.org/smh377/tclcurl/
+Cloned from a repo by Steve Havelka once at:  https://bitbucket.org/smh377/tclcurl/
 
 ## License
 
