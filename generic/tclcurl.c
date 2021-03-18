@@ -938,11 +938,11 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
             break;
         case 43:
             if(SetoptsList(interp,&curlData->postquote,objv)) {
-                curlErrorSetOpt(interp,configTable,tableIndex,"postqoute invalid");
+                curlErrorSetOpt(interp,configTable,tableIndex,"postquote invalid");
                 return TCL_ERROR;
             }
             if (curl_easy_setopt(curlHandle,CURLOPT_POSTQUOTE,curlData->postquote)) {
-                curlErrorSetOpt(interp,configTable,tableIndex,"postqoute invalid");
+                curlErrorSetOpt(interp,configTable,tableIndex,"postquote invalid");
                 curl_slist_free_all(curlData->postquote);
                 curlData->postquote=NULL;
                 return TCL_ERROR;
@@ -1256,11 +1256,11 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
             break;
         case 78:
             if(SetoptsList(interp,&curlData->prequote,objv)) {
-                curlErrorSetOpt(interp,configTable,tableIndex,"pretqoute invalid");
+                curlErrorSetOpt(interp,configTable,tableIndex,"prequote invalid");
                 return TCL_ERROR;
             }
             if (curl_easy_setopt(curlHandle,CURLOPT_PREQUOTE,curlData->prequote)) {
-                curlErrorSetOpt(interp,configTable,tableIndex,"preqoute invalid");
+                curlErrorSetOpt(interp,configTable,tableIndex,"prequote invalid");
                 curl_slist_free_all(curlData->prequote);
                 curlData->prequote=NULL;
                 return TCL_ERROR;
