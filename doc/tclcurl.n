@@ -779,9 +779,6 @@ after such a redirection.
 
 This option is meaningful only when setting \fB-followlocation\fP
 
-The option used to be known as \fB-post301\fP, which should still work but is know
-deprecated.
-
 .TP
 .B -put
 An 1 parameter tells the extension to use HTTP PUT a file. The file to put
