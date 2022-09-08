@@ -455,6 +455,7 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
 
     Tcl_Obj                 **httpPostData;
     Tcl_Obj                 **protocols;
+    Tcl_Obj                 **sslversionandmax;
     int                       curlTableIndex,formaddError,formArrayIndex;
     struct formArrayStruct   *newFormArray;
     struct curl_forms        *formArray;
@@ -462,6 +463,7 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
     size_t                    contentslen;
 
     unsigned long int         protocolMask;
+    unsigned long int         sslversionMask;
 
     switch(tableIndex) {
         case 0:
@@ -2180,6 +2182,73 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
                 return TCL_ERROR;
             }
             return TCL_OK;
+            break;
+        case 175:
+            if (Tcl_ListObjGetElements(interp,objv,&j,&sslversionandmax)==TCL_ERROR) {
+                return 1;
+            }
+            if (j!=2) {
+                curlErrorSetOpt(interp,configTable,tableIndex,"sslversionandmax requires a 2 element list");
+                return TCL_ERROR;
+            }
+
+            
+            sslversionMask=0;
+            if (Tcl_GetIndexFromObj(interp,sslversionandmax[0],sslversionnomax,
+                    "sslversionnomax",TCL_EXACT,&curlTableIndex)==TCL_ERROR) {
+                return TCL_ERROR;
+            }
+            switch(curlTableIndex) {
+                case 0:
+                    sslversionMask|=CURL_SSLVERSION_DEFAULT;
+                    break;
+                case 1:
+                    sslversionMask|=CURL_SSLVERSION_TLSv1;
+                    break;
+                case 2:
+                    sslversionMask|=CURL_SSLVERSION_SSLv2;
+                    break;
+                case 3:
+                    sslversionMask|=CURL_SSLVERSION_SSLv3;
+                    break;
+                case 4:
+                    sslversionMask|=CURL_SSLVERSION_TLSv1_0;
+                    break;
+                case 5:
+                    sslversionMask|=CURL_SSLVERSION_TLSv1_1;
+                    break;
+                case 6:
+                    sslversionMask|=CURL_SSLVERSION_TLSv1_2;
+                    break;
+                case 7:
+                    sslversionMask|=CURL_SSLVERSION_TLSv1_3;
+            }
+
+            if (Tcl_GetIndexFromObj(interp,sslversionandmax[1],sslversionmax,
+                    "sslversionmax",TCL_EXACT,&curlTableIndex)==TCL_ERROR) {
+                return TCL_ERROR;
+            }
+            switch(curlTableIndex) {
+                case 0:
+                    sslversionMask|=CURL_SSLVERSION_MAX_DEFAULT;
+                    break;
+                case 1:
+                    sslversionMask|=CURL_SSLVERSION_MAX_TLSv1_0;
+                    break;
+                case 2:
+                    sslversionMask|=CURL_SSLVERSION_MAX_TLSv1_1;
+                    break;
+                case 3:
+                    sslversionMask|=CURL_SSLVERSION_MAX_TLSv1_2;
+                    break;
+                case 4:
+                    sslversionMask|=CURL_SSLVERSION_MAX_TLSv1_3;
+            }
+
+            tmpObjPtr=Tcl_NewLongObj(sslversionMask);
+            if (SetoptLong(interp,curlHandle,CURLOPT_SSLVERSION,tableIndex,tmpObjPtr)) {
+                    return TCL_ERROR;
+            }
             break;
     }
     return TCL_OK;
