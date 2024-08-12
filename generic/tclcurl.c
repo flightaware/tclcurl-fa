@@ -40,9 +40,15 @@
 EXTERN int
 Tclcurl_Init (Tcl_Interp *interp) {
 
-    if(Tcl_InitStubs(interp,"8.1",0)==NULL) {
+#ifdef USE_TCL_STUBS
+    if (Tcl_InitStubs(interp,"8.5",0)==NULL) {
         return TCL_ERROR;
     }
+#else
+    if (Tcl_PkgRequire(interp,"Tcl","8.5",0)==NULL) {
+        return TCL_ERROR;
+    }
+#endif
 
     Tcl_CreateObjCommand (interp,"::curl::init",curlInitObjCmd,
             (ClientData)NULL,(Tcl_CmdDeleteProc *)NULL);
@@ -87,27 +93,26 @@ Tclcurl_Init (Tcl_Interp *interp) {
  *----------------------------------------------------------------------
  */
 
-char *
+Tcl_Obj *
 curlCreateObjCmd (Tcl_Interp *interp,struct curlObjData  *curlData) {
-    char                *handleName;
+    char                handleName[32];
     int                 i;
     Tcl_CmdInfo         info;
     Tcl_Command         cmdToken;
 
     /* We try with curl1, if it already exists with curl2...*/
-    handleName=(char *)Tcl_Alloc(32);
     for (i=1;;i++) {
         sprintf(handleName,"curl%d",i);
         if (!Tcl_GetCommandInfo(interp,handleName,&info)) {
             cmdToken=Tcl_CreateObjCommand(interp,handleName,curlObjCmd,
-                                (ClientData)curlData, 
+                                (ClientData)curlData,
                                 (Tcl_CmdDeleteProc *)curlDeleteCmd);
             break;
         }
     }
     curlData->token=cmdToken;
 
-    return handleName;
+    return Tcl_NewStringObj(handleName,-1);
 }
 
 /*
@@ -129,12 +134,12 @@ curlCreateObjCmd (Tcl_Interp *interp,struct curlObjData  *curlData) {
 
 int
 curlInitObjCmd (ClientData clientData, Tcl_Interp *interp,
-        int objc,Tcl_Obj *CONST objv[]) {
+        int objc,Tcl_Obj *const objv[]) {
 
     Tcl_Obj             *resultPtr;
     CURL                *curlHandle;
     struct curlObjData  *curlData;
-    char                *handleName;
+    Tcl_Obj             *handleObj;
 
     curlData=(struct curlObjData *)Tcl_Alloc(sizeof(struct curlObjData));
     if (curlData==NULL) {
@@ -153,13 +158,11 @@ curlInitObjCmd (ClientData clientData, Tcl_Interp *interp,
         return TCL_ERROR;
     }
 
-    handleName=curlCreateObjCmd(interp,curlData);
+    handleObj=curlCreateObjCmd(interp,curlData);
 
     curlData->curl=curlHandle;
 
-    resultPtr=Tcl_NewStringObj(handleName,-1);
-    Tcl_SetObjResult(interp,resultPtr);
-    Tcl_Free(handleName);
+    Tcl_SetObjResult(interp,handleObj);
 
     return TCL_OK;
 }
@@ -182,7 +185,7 @@ curlInitObjCmd (ClientData clientData, Tcl_Interp *interp,
  */
 int
 curlObjCmd (ClientData clientData, Tcl_Interp *interp,
-    int objc,Tcl_Obj *CONST objv[]) {
+    int objc,Tcl_Obj *const objv[]) {
 
     struct curlObjData     *curlData=(struct curlObjData *)clientData;
     CURL                   *curlHandle=curlData->curl;
@@ -199,12 +202,19 @@ curlObjCmd (ClientData clientData, Tcl_Interp *interp,
 
     switch(tableIndex) {
         case 0:
+            if (objc != 4) {
+                Tcl_WrongNumArgs(interp,2,objv,"option value");
+                return TCL_ERROR;
+            }
             if (curlSetOptsTransfer(interp,curlData,objc,objv)==TCL_ERROR) {
                 return TCL_ERROR;
             }
             break;
         case 1:
-/*            fprintf(stdout,"Perform\n"); */
+            if (objc != 2) {
+                Tcl_WrongNumArgs(interp,2,objv,"");
+                return TCL_ERROR;
+            }
             if (curlPerform(interp,curlHandle,curlData)) {
                 if (curlData->errorBuffer!=NULL) {
                     if (curlData->errorBufferKey==NULL) {
@@ -220,7 +230,10 @@ curlObjCmd (ClientData clientData, Tcl_Interp *interp,
             }
             break;
         case 2:
-/*            fprintf(stdout,"Getinfo\n"); */
+            if (objc != 3) {
+                Tcl_WrongNumArgs(interp,2,objv,"option");
+                return TCL_ERROR;
+            }
             if (Tcl_GetIndexFromObj(interp,objv[2],getInfoTable,
                     "getinfo option",TCL_EXACT,&tableIndex)==TCL_ERROR) {
                 return TCL_ERROR;
@@ -230,36 +243,53 @@ curlObjCmd (ClientData clientData, Tcl_Interp *interp,
             }
             break;
         case 3:
-/*            fprintf(stdout,"Cleanup\n");  */
+            if (objc != 2) {
+                Tcl_WrongNumArgs(interp,2,objv,"");
+                return TCL_ERROR;
+            }
             Tcl_DeleteCommandFromToken(interp,curlData->token);
             break;
         case 4:
-/*            fprintf(stdout,"Configure\n"); */
+            if (objc < 4 || objc % 2) {
+                Tcl_WrongNumArgs(interp,2,objv,"option value ?option value ...?");
+                return TCL_ERROR;
+            }
             if (curlConfigTransfer(interp,curlData,objc,objv)==TCL_ERROR) {
                 return TCL_ERROR;
             }
             break;
         case 5:
-/*            fprintf(stdout,"DupHandle\n"); */
+            if (objc != 2) {
+                Tcl_WrongNumArgs(interp,2,objv,"");
+                return TCL_ERROR;
+            }
             if (curlDupHandle(interp,curlData,objc,objv)==TCL_ERROR) {
                 return TCL_ERROR;
             }
             break;
         case 6:
-/*            fprintf(stdout,"Reset\n");     */
+            if (objc != 2) {
+                Tcl_WrongNumArgs(interp,2,objv,"");
+                return TCL_ERROR;
+            }
             if (curlResetHandle(interp,curlData)==TCL_ERROR) {
                 return TCL_ERROR;
             }
             break;
         case 7:
-/*            fprintf(stdout,"Pause\n");     */
+            if (objc != 2) {
+                Tcl_WrongNumArgs(interp,2,objv,"");
+                return TCL_ERROR;
+            }
             if (curl_easy_pause(curlData->curl,CURLPAUSE_ALL)==TCL_ERROR) {
                 return TCL_ERROR;
             }
             break;
-
         case 8:
-/*            fprintf(stdout,"Resume\n");     */
+            if (objc != 2) {
+                Tcl_WrongNumArgs(interp,2,objv,"");
+                return TCL_ERROR;
+            }
             if (curl_easy_pause(curlData->curl,CURLPAUSE_CONT)==TCL_ERROR) {
                 return TCL_ERROR;
             }
@@ -357,7 +387,7 @@ curlPerform(Tcl_Interp *interp,CURL *curlHandle,
  */
 int
 curlSetOptsTransfer(Tcl_Interp *interp, struct curlObjData *curlData,
-        int objc, Tcl_Obj *CONST objv[]) {
+        int objc, Tcl_Obj *const objv[]) {
 
     int            tableIndex;
 
@@ -391,11 +421,9 @@ int
 curlConfigTransfer(Tcl_Interp *interp, struct curlObjData *curlData,
         int objc, Tcl_Obj *CONST objv[]) {
 
-    int            tableIndex;
-    int            i,j;
-
-    Tcl_Obj     *resultPtr;
-    char        errorMsg[500];
+    int              tableIndex;
+    int              i,j;
+    Tcl_Obj         *resultPtr;
 
     for(i=2,j=3;i<objc;i=i+2,j=j+2) {
         if (Tcl_GetIndexFromObj(interp, objv[i], configTable, "option", 
@@ -403,8 +431,7 @@ curlConfigTransfer(Tcl_Interp *interp, struct curlObjData *curlData,
             return TCL_ERROR;
         }
         if (i==objc-1) {
-            snprintf(errorMsg,500,"Empty value for %s",configTable[tableIndex]);
-            resultPtr=Tcl_NewStringObj(errorMsg,-1);
+            resultPtr=Tcl_ObjPrintf("Empty value for %s",configTable[tableIndex]);
             Tcl_SetObjResult(interp,resultPtr);            
             return TCL_ERROR;
         }
@@ -849,9 +876,7 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
                 curlResetFormArray(formArray);
                 curlData->formArray=newFormArray->next;
                 Tcl_Free((char *)newFormArray);
-                tmpStr=Tcl_Alloc(10);
-                snprintf(tmpStr,10,"%d",formaddError);
-                resultObjPtr=Tcl_NewStringObj(tmpStr,-1);
+                resultObjPtr=Tcl_ObjPrintf("%d",formaddError);
                 Tcl_SetObjResult(interp,resultObjPtr);
                 Tcl_Free(tmpStr);
                 return TCL_ERROR;
@@ -914,10 +939,13 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
                     longNumber=CURL_SSLVERSION_MAX_TLSv1_3;
             }
             tmpObjPtr=Tcl_NewLongObj(longNumber);
+            Tcl_IncrRefCount(tmpObjPtr);
             if (SetoptLong(interp,curlHandle,CURLOPT_SSLVERSION,
                         tableIndex,tmpObjPtr)) {
+                Tcl_DecrRefCount(tmpObjPtr);
                 return TCL_ERROR;
             }
+            Tcl_DecrRefCount(tmpObjPtr);
             break;
         case 41:
             if (SetoptInt(interp,curlHandle,CURLOPT_CRLF,tableIndex,objv)) {
@@ -1357,6 +1385,7 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
                 case 5:
                     curl_easy_setopt(curlHandle,CURLOPT_PROXYTYPE,
                             CURLPROXY_SOCKS5_HOSTNAME);
+                    break;
             }
             break;
         case 88:
@@ -1422,10 +1451,13 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
                     break;
             }
             tmpObjPtr=Tcl_NewLongObj(longNumber);
+            Tcl_IncrRefCount(tmpObjPtr);
             if (SetoptLong(interp,curlHandle,CURLOPT_HTTPAUTH
                     ,tableIndex,tmpObjPtr)) {
+                Tcl_DecrRefCount(tmpObjPtr);
                 return TCL_ERROR;
             }
+            Tcl_DecrRefCount(tmpObjPtr);
             break;
         case 93:
             if (SetoptLong(interp,curlHandle,CURLOPT_FTP_CREATE_MISSING_DIRS,
@@ -1460,10 +1492,13 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
                     break;
             }
             tmpObjPtr=Tcl_NewLongObj(longNumber);
+            Tcl_IncrRefCount(tmpObjPtr);
             if (SetoptLong(interp,curlHandle,CURLOPT_PROXYAUTH
                     ,tableIndex,tmpObjPtr)) {
+                Tcl_DecrRefCount(tmpObjPtr);
                 return TCL_ERROR;
             }
+            Tcl_DecrRefCount(tmpObjPtr);
             break;
         case 95:
             if (SetoptLong(interp,curlHandle,CURLOPT_FTP_RESPONSE_TIMEOUT,
@@ -1488,10 +1523,13 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
                     break;
             }
             tmpObjPtr=Tcl_NewLongObj(longNumber);
+            Tcl_IncrRefCount(tmpObjPtr);
             if (SetoptLong(interp,curlHandle,CURLOPT_IPRESOLVE
                     ,tableIndex,tmpObjPtr)) {
+                Tcl_DecrRefCount(tmpObjPtr);
                 return TCL_ERROR;
             }
+            Tcl_DecrRefCount(tmpObjPtr);
             break;
         case 97:
             if (SetoptLong(interp,curlHandle,CURLOPT_MAXFILESIZE,
@@ -1525,10 +1563,13 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
                     break;
             }
             tmpObjPtr=Tcl_NewLongObj(longNumber);
+            Tcl_IncrRefCount(tmpObjPtr);
             if (SetoptLong(interp,curlHandle,CURLOPT_USE_SSL,
                         tableIndex,tmpObjPtr)) {
+                Tcl_DecrRefCount(tmpObjPtr);
                 return TCL_ERROR;
             }
+            Tcl_DecrRefCount(tmpObjPtr);
             break;
         case 100:
             if (SetoptSHandle(interp,curlHandle,CURLOPT_SHARE,
@@ -1599,10 +1640,13 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
                     break;
             }
             tmpObjPtr=Tcl_NewLongObj(longNumber);
+            Tcl_IncrRefCount(tmpObjPtr);
             if (SetoptLong(interp,curlHandle,CURLOPT_FTPSSLAUTH,
                         tableIndex,tmpObjPtr)) {
+                Tcl_DecrRefCount(tmpObjPtr);
                 return TCL_ERROR;
             }
+            Tcl_DecrRefCount(tmpObjPtr);
             break;
         case 112:
             curlErrorSetOpt(interp,configTable,tableIndex,"option is obsolete");
@@ -1652,10 +1696,13 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
                     break;
             }
             tmpObjPtr=Tcl_NewLongObj(longNumber);
+            Tcl_IncrRefCount(tmpObjPtr);
             if (SetoptLong(interp,curlHandle,CURLOPT_FTP_FILEMETHOD,
                         tableIndex,tmpObjPtr)) {
+                Tcl_DecrRefCount(tmpObjPtr);
                 return TCL_ERROR;
             }
+            Tcl_DecrRefCount(tmpObjPtr);
             break;
         case 119:
             if (SetoptLong(interp,curlHandle,CURLOPT_LOCALPORT,
@@ -1714,12 +1761,24 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
                 case 4:
                     longNumber=CURLSSH_AUTH_ANY;
                     break;
+                case 5:
+                    longNumber=CURLSSH_AUTH_NONE;
+                    break;
+                case 6:
+                    longNumber=CURLSSH_AUTH_AGENT;
+                    break;
+                case 7:
+                    longNumber=CURLSSH_AUTH_DEFAULT;
+                    break;
             }
             tmpObjPtr=Tcl_NewLongObj(longNumber);
+            Tcl_IncrRefCount(tmpObjPtr);
             if (SetoptLong(interp,curlHandle,CURLOPT_SSH_AUTH_TYPES,
                         tableIndex,tmpObjPtr)) {
+                Tcl_DecrRefCount(tmpObjPtr);
                 return TCL_ERROR;
             }
+            Tcl_DecrRefCount(tmpObjPtr);
             break;
         case 126:
             if (SetoptChar(interp,curlHandle,CURLOPT_SSH_PUBLIC_KEYFILE,
@@ -1785,14 +1844,20 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
                     longNumber=CURL_REDIR_POST_302;
                     break;
                 case 2:
+                    longNumber=CURL_REDIR_POST_303;
+                    break;
+                case 3:
                     longNumber=CURL_REDIR_POST_ALL;
                     break;
             }
             tmpObjPtr=Tcl_NewLongObj(longNumber);
+            Tcl_IncrRefCount(tmpObjPtr);
             if (SetoptLong(interp,curlHandle,CURLOPT_POSTREDIR,
                         tableIndex,tmpObjPtr)) {
+                Tcl_DecrRefCount(tmpObjPtr);
                 return TCL_ERROR;
             }
+            Tcl_DecrRefCount(tmpObjPtr);
             break;
         case 140:
             if (SetoptChar(interp,curlHandle,CURLOPT_SSH_HOST_PUBLIC_KEY_MD5,
@@ -1969,14 +2034,17 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
                 }
             }
             tmpObjPtr=Tcl_NewLongObj(protocolMask);
+            Tcl_IncrRefCount(tmpObjPtr);
             if (tableIndex==154) {
                 longNumber=CURLOPT_PROTOCOLS;
             } else {
                 longNumber=CURLOPT_REDIR_PROTOCOLS;
             }
             if (SetoptLong(interp,curlHandle,longNumber,tableIndex,tmpObjPtr)) {
-                    return TCL_ERROR;
+                Tcl_DecrRefCount(tmpObjPtr);
+                return TCL_ERROR;
             }
+            Tcl_DecrRefCount(tmpObjPtr);
             break;
         case 156:
             if (Tcl_GetIndexFromObj(interp, objv, ftpsslccc,
@@ -1995,10 +2063,13 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
                     break;
             }
             tmpObjPtr=Tcl_NewLongObj(longNumber);
+            Tcl_IncrRefCount(tmpObjPtr);
             if (SetoptLong(interp,curlHandle,CURLOPT_FTP_SSL_CCC,
                         tableIndex,tmpObjPtr)) {
+                Tcl_DecrRefCount(tmpObjPtr);
                 return TCL_ERROR;
             }
+            Tcl_DecrRefCount(tmpObjPtr);
             break;
         case 157:
             if (SetoptChar(interp,curlHandle,CURLOPT_SSH_KNOWNHOSTS,
@@ -2007,7 +2078,7 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
             }
             break;
         case 158:
-            if (curl_easy_setopt(curlHandle,CURLOPT_SSH_KEYFUNCTION,curlsshkeycallback)) {    
+            if (curl_easy_setopt(curlHandle,CURLOPT_SSH_KEYFUNCTION,curlsshkeycallback)) {
                 return TCL_ERROR;
             }
             if (curl_easy_setopt(curlHandle,CURLOPT_SSH_KEYDATA,curlData)) {
@@ -2022,7 +2093,7 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
             }
             break;
         case 160:
-            if(SetoptsList(interp,&curlData->mailrcpt,objv)) {
+            if (SetoptsList(interp,&curlData->mailrcpt,objv)) {
                 curlErrorSetOpt(interp,configTable,tableIndex,"mailrcpt invalid");
                 return TCL_ERROR;
             }
@@ -2096,7 +2167,7 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
             }
             break;
         case 167:
-            if(SetoptsList(interp,&curlData->resolve,objv)) {
+            if (SetoptsList(interp,&curlData->resolve,objv)) {
                 curlErrorSetOpt(interp,configTable,tableIndex,"invalid list");
                 return TCL_ERROR;
             }
@@ -2133,10 +2204,13 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
                     longNumber=CURL_TLSAUTH_SRP;
             }
             tmpObjPtr=Tcl_NewLongObj(longNumber);
+            Tcl_IncrRefCount(tmpObjPtr);
             if (SetoptLong(interp,curlHandle,CURLOPT_TLSAUTH_TYPE,
                         tableIndex,tmpObjPtr)) {
+                Tcl_DecrRefCount(tmpObjPtr);
                 return TCL_ERROR;
             }
+            Tcl_DecrRefCount(tmpObjPtr);
             break;
         case 171:
             if (SetoptLong(interp,curlHandle,CURLOPT_TRANSFER_ENCODING,
@@ -2157,10 +2231,13 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
                     longNumber=CURLGSSAPI_DELEGATION_POLICY_FLAG;
             }
             tmpObjPtr=Tcl_NewLongObj(longNumber);
+            Tcl_IncrRefCount(tmpObjPtr);
             if (SetoptLong(interp,curlHandle,CURLOPT_GSSAPI_DELEGATION,
                         tableIndex,tmpObjPtr)) {
+                Tcl_DecrRefCount(tmpObjPtr);
                 return TCL_ERROR;
             }
+            Tcl_DecrRefCount(tmpObjPtr);
             break;
         case 173:
             if (SetoptChar(interp,curlHandle,CURLOPT_NOPROXY,
@@ -2169,7 +2246,7 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
             }
             break;
         case 174:
-            if(SetoptsList(interp,&curlData->telnetoptions,objv)) {
+            if (SetoptsList(interp,&curlData->telnetoptions,objv)) {
                 curlErrorSetOpt(interp,configTable,tableIndex,"invalid list");
                 return TCL_ERROR;
             }
@@ -2180,6 +2257,12 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
                 return TCL_ERROR;
             }
             return TCL_OK;
+            break;
+        case 175:
+            if (SetoptBlob(interp,curlHandle,CURLOPT_CAINFO_BLOB,
+                    tableIndex,objv)) {
+                return TCL_ERROR;
+            }
             break;
     }
     return TCL_OK;
@@ -2192,7 +2275,7 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
  *
  *   Sets the curl options that require an int
  *
- *  Parameter:
+ * Parameters:
  *   interp: The interpreter we are working with.
  *   curlHandle: and the curl handle
  *   opt: the option to set
@@ -2201,24 +2284,20 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
  * Results:
  *  0 if all went well.
  *  1 in case of error.
+ *
  *----------------------------------------------------------------------
  */
 int
 SetoptInt(Tcl_Interp *interp,CURL *curlHandle,CURLoption opt,
         int tableIndex,Tcl_Obj *tclObj) {
     int        intNumber;
-    char       *parPtr;
 
     if (Tcl_GetIntFromObj(interp,tclObj,&intNumber)) {
-        parPtr=curlstrdup(Tcl_GetString(tclObj));
-        curlErrorSetOpt(interp,configTable,tableIndex,parPtr);
-        Tcl_Free(parPtr);
+        curlErrorSetOpt(interp,configTable,tableIndex,Tcl_GetString(tclObj));
         return 1;
     }
     if (curl_easy_setopt(curlHandle,opt,intNumber)) {
-        parPtr=curlstrdup(Tcl_GetString(tclObj));
-        curlErrorSetOpt(interp,configTable,tableIndex,parPtr);
-        Tcl_Free(parPtr);
+        curlErrorSetOpt(interp,configTable,tableIndex,Tcl_GetString(tclObj));
         return 1;
     }
     return 0;
@@ -2231,7 +2310,7 @@ SetoptInt(Tcl_Interp *interp,CURL *curlHandle,CURLoption opt,
  *
  *  Set the curl options that require a long
  *
- * Parameter:
+ * Parameters:
  *  interp: The interpreter we are working with.
  *  curlHandle: and the curl handle
  *  opt: the option to set
@@ -2240,24 +2319,20 @@ SetoptInt(Tcl_Interp *interp,CURL *curlHandle,CURLoption opt,
  * Results:
  *  0 if all went well.
  *  1 in case of error.
+ *
  *----------------------------------------------------------------------
  */
 int
 SetoptLong(Tcl_Interp *interp,CURL *curlHandle,CURLoption opt,
         int tableIndex,Tcl_Obj *tclObj) {
     long         longNumber;
-    char        *parPtr;
 
     if (Tcl_GetLongFromObj(interp,tclObj,&longNumber)) {
-        parPtr=curlstrdup(Tcl_GetString(tclObj));
-        curlErrorSetOpt(interp,configTable,tableIndex,parPtr);
-        Tcl_Free(parPtr);
+        curlErrorSetOpt(interp,configTable,tableIndex,Tcl_GetString(tclObj));
         return 1;
     }
     if (curl_easy_setopt(curlHandle,opt,longNumber)) {
-        parPtr=curlstrdup(Tcl_GetString(tclObj));
-        curlErrorSetOpt(interp,configTable,tableIndex,parPtr);
-        Tcl_Free(parPtr);
+        curlErrorSetOpt(interp,configTable,tableIndex,Tcl_GetString(tclObj));
         return 1;
     }
 
@@ -2271,7 +2346,7 @@ SetoptLong(Tcl_Interp *interp,CURL *curlHandle,CURLoption opt,
  *
  *  Set the curl options that require a curl_off_t
  *
- * Parameter:
+ * Parameters:
  *  interp: The interpreter we are working with.
  *  curlHandle: and the curl handle
  *  opt: the option to set
@@ -2280,31 +2355,26 @@ SetoptLong(Tcl_Interp *interp,CURL *curlHandle,CURLoption opt,
  * Results:
  *  0 if all went well.
  *  1 in case of error.
+ *
  *----------------------------------------------------------------------
  */
 int
 SetoptCurlOffT(Tcl_Interp *interp,CURL *curlHandle,CURLoption opt,
         int tableIndex,Tcl_Obj *tclObj) {
     Tcl_WideInt wideNumber;
-    char        *parPtr;
 
     if (Tcl_GetWideIntFromObj(interp,tclObj,&wideNumber)) {
-        parPtr=curlstrdup(Tcl_GetString(tclObj));
-        curlErrorSetOpt(interp,configTable,tableIndex,parPtr);
-        Tcl_Free(parPtr);
+        curlErrorSetOpt(interp,configTable,tableIndex,Tcl_GetString(tclObj));
         return 1;
     }
 
     if (curl_easy_setopt(curlHandle,opt,(curl_off_t)wideNumber)) {
-        parPtr=curlstrdup(Tcl_GetString(tclObj));
-        curlErrorSetOpt(interp,configTable,tableIndex,parPtr);
-        Tcl_Free(parPtr);
+        curlErrorSetOpt(interp,configTable,tableIndex,Tcl_GetString(tclObj));
         return 1;
     }
 
     return 0;
 }
-
 
 /*
  *----------------------------------------------------------------------
@@ -2313,7 +2383,7 @@ SetoptCurlOffT(Tcl_Interp *interp,CURL *curlHandle,CURLoption opt,
  *
  *  Set the curl options that require a string
  *
- * Parameter:
+ * Parameters:
  *  interp: The interpreter we are working with.
  *  curlHandle: and the curl handle
  *  opt: the option to set
@@ -2322,6 +2392,7 @@ SetoptCurlOffT(Tcl_Interp *interp,CURL *curlHandle,CURLoption opt,
  * Results:
  *  0 if all went well.
  *  1 in case of error.
+ *
  *----------------------------------------------------------------------
  */
 int
@@ -2342,12 +2413,49 @@ SetoptChar(Tcl_Interp *interp,CURL *curlHandle,
 /*
  *----------------------------------------------------------------------
  *
+ * SetoptBlob --
+ *
+ *	Set the curl options that require a blob
+ *
+ * Parameters:
+ *	interp: The interpreter we are working with.
+ *	curlHandle: and the curl handle
+ *	opt: the option to set
+ *	tclObj: The Tcl with the value for the option.
+ *
+ * Results:
+ *	0 if all went well.
+ *	1 in case of error.
+ *
+ *----------------------------------------------------------------------
+ */
+int
+SetoptBlob(Tcl_Interp *interp,CURL *curlHandle,
+        CURLoption opt,int tableIndex,Tcl_Obj *tclObj) {
+    struct curl_blob   optionBlob;
+    int                len;
+
+    optionBlob.data = Tcl_GetByteArrayFromObj(tclObj,&len);
+    if (optionBlob.data) {
+        optionBlob.len = len;
+        optionBlob.flags = CURL_BLOB_COPY;
+        if (curl_easy_setopt(curlHandle,opt,&optionBlob)) {
+            curlErrorSetOpt(interp,configTable,tableIndex,"...");
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
  * SetoptSHandle --
  *
  *  Set the curl options that require a share handle (there is only
  *  one but you never know.
  *
- * Parameter:
+ * Parameters:
  *  interp: The interpreter we are working with.
  *  curlHandle: the curl handle
  *  opt: the option to set
@@ -2356,6 +2464,7 @@ SetoptChar(Tcl_Interp *interp,CURL *curlHandle,
  * Results:
  *  0 if all went well.
  *  1 in case of error.
+ *
  *----------------------------------------------------------------------
  */
 int
@@ -2386,13 +2495,14 @@ SetoptSHandle(Tcl_Interp *interp,CURL *curlHandle,
  *
  *  Prepares a slist for future use.
  *
- * Parameter:
+ * Parameters:
  *  slistPtr: Pointer to the slist to prepare.
  *  objv: Tcl object with a list of the data.
  *
  * Results:
  *  0 if all went well.
  *  1 in case of error.
+ *
  *----------------------------------------------------------------------
  */
 int
@@ -2425,13 +2535,14 @@ SetoptsList(Tcl_Interp *interp,struct curl_slist **slistPtr,
  *
  * curlErrorSetOpt --
  *
- *  When an error happens when setting an option, this function
- *  takes cares of reporting it
+ *	When an error happens when setting an option, this function
+ *	takes cares of reporting it
  *
- * Parameter:
- *  interp: Pointer to the interpreter we are using.
- *  option: The index of the option in 'optionTable'
- *  parPtr: String with the parameter we wanted to set the option to.
+ * Parameters:
+ *	interp: Pointer to the interpreter we are using.
+ *	option: The index of the option in 'optionTable'
+ *	parPtr: String with the parameter we wanted to set the option to.
+ *
  *----------------------------------------------------------------------
  */
 
@@ -2439,30 +2550,29 @@ void
 curlErrorSetOpt(Tcl_Interp *interp,CONST char **configTable, int option,
         CONST char *parPtr) {
     Tcl_Obj     *resultPtr;
-    char        errorMsg[500];
 
-    snprintf(errorMsg,500,"setting option %s: %s",configTable[option],parPtr);
-    resultPtr=Tcl_NewStringObj(errorMsg,-1);
+    resultPtr=Tcl_ObjPrintf("setting option %s: %s",configTable[option],parPtr);
     Tcl_SetObjResult(interp,resultPtr);
 }
 
 /*
  *----------------------------------------------------------------------
  *
- * curlHeaderVar --
+ * curlHeaderReader --
  *
  *  This is the function that will be invoked if the user wants to put
  *  the headers into a variable
  *
- * Parameter:
+ * Parameters:
  *  header: string with the header line.
  *  size and nmemb: it so happens size * nmemb if the size of the
  *  header string.
  *  curlData: A pointer to the curlData structure for the transfer.
  *
- * Returns
+ * Results:
  *  The number of bytes actually written or -1 in case of error, in
  *  which case 'libcurl' will abort the transfer.
+ *
  *-----------------------------------------------------------------------
  */
 size_t
@@ -2472,8 +2582,8 @@ curlHeaderReader(void *ptr,size_t size,size_t nmemb,FILE *curlDataPtr) {
     struct curlObjData  *curlData=(struct curlObjData *)curlDataPtr;
     Tcl_RegExp           regExp;
 
-    CONST char          *startPtr;
-    CONST char          *endPtr;
+    const char          *startPtr;
+    const char          *endPtr;
 
     char                *headerName;
     char                *headerContent;
@@ -2518,7 +2628,7 @@ curlHeaderReader(void *ptr,size_t size,size_t nmemb,FILE *curlDataPtr) {
 
         Tcl_SetVar2(curlData->interp,curlData->headerVar,"http",
                 httpStatus,0);
-	Tcl_Free(httpStatus);
+        Tcl_Free(httpStatus);
     }
     return size*nmemb;
 }
@@ -2533,15 +2643,16 @@ curlHeaderReader(void *ptr,size_t size,size_t nmemb,FILE *curlDataPtr) {
  *
  *  This function has been adapted from an example in libcurl's FAQ.
  *
- * Parameter:
+ * Parameters:
  *  header: string with the header line.
  *  size and nmemb: it so happens size * nmemb if the size of the
  *  header string.
  *  curlData: A pointer to the curlData structure for the transfer.
  *
- * Returns
+ * Results:
  *  The number of bytes actually written or -1 in case of error, in
  *  which case 'libcurl' will abort the transfer.
+ *
  *-----------------------------------------------------------------------
  */
 size_t
@@ -2568,16 +2679,17 @@ curlBodyReader(void *ptr,size_t size,size_t nmemb,FILE *curlDataPtr) {
  *
  *  This function has been adapted from an example in libcurl's FAQ.
  *
- * Parameter:
+ * Parameters:
  *  clientData: The curlData struct for the transfer.
  *  dltotal: Total amount of bytes to download.
  *  dlnow: Bytes downloaded so far.
  *  ultotal: Total amount of bytes to upload.
  *  ulnow: Bytes uploaded so far.
  *
- * Returns
+ * Results:
  *  Returning a non-zero value will make 'libcurl' abort the transfer
  *  and return 'CURLE_ABORTED_BY_CALLBACK'.
+ *
  *-----------------------------------------------------------------------
  */
 int
@@ -2586,20 +2698,27 @@ curlProgressCallback(void *clientData,double dltotal,double dlnow,
 
     struct curlObjData    *curlData=(struct curlObjData *)clientData;
     Tcl_Obj               *tclProcPtr;
-    char                   tclCommand[300];
 
-    snprintf(tclCommand,299,"%s %f %f %f %f",curlData->progressProc,dltotal,
-            dlnow,ultotal,ulnow);
-    tclProcPtr=Tcl_NewStringObj(tclCommand,-1);
     if (curlData->cancelTransVarName) {
         if (curlData->cancelTrans) {
             curlData->cancelTrans=0;
             return -1;
         }
     }
+
+    tclProcPtr = Tcl_NewListObj(0, 0);
+    Tcl_ListObjAppendElement(curlData->interp, tclProcPtr, Tcl_NewStringObj(curlData->progressProc, -1));
+    Tcl_ListObjAppendElement(curlData->interp, tclProcPtr, Tcl_NewDoubleObj(dltotal));
+    Tcl_ListObjAppendElement(curlData->interp, tclProcPtr, Tcl_NewDoubleObj(dlnow));
+    Tcl_ListObjAppendElement(curlData->interp, tclProcPtr, Tcl_NewDoubleObj(ultotal));
+    Tcl_ListObjAppendElement(curlData->interp, tclProcPtr, Tcl_NewDoubleObj(ulnow));
+    Tcl_IncrRefCount(tclProcPtr);
+
     if (Tcl_EvalObjEx(curlData->interp,tclProcPtr,TCL_EVAL_GLOBAL)!=TCL_OK) {
+        Tcl_DecrRefCount(tclProcPtr);
         return -1;
     }
+    Tcl_DecrRefCount(tclProcPtr);
     return 0;
 }
 
@@ -2613,35 +2732,60 @@ curlProgressCallback(void *clientData,double dltotal,double dlnow,
  *
  *  This function has been adapted from an example in libcurl's FAQ.
  *
- * Parameter:
+ * Parameters:
  *  ptr: A pointer to the data.
  *  size and nmemb: it so happens size * nmemb if the size of the
  *  data read.
  *  curlData: A pointer to the curlData structure for the transfer.
  *
- * Returns
+ * Results:
  *  The number of bytes actually written or -1 in case of error, in
  *  which case 'libcurl' will abort the transfer.
+ *
  *-----------------------------------------------------------------------
  */
 size_t
 curlWriteProcInvoke(void *ptr,size_t size,size_t nmemb,FILE *curlDataPtr) {
     register int realsize = size * nmemb;
-    struct curlObjData  *curlData=(struct curlObjData *)curlDataPtr;
-    Tcl_Obj             *objv[2];
+    struct curlObjData  *curlData = (struct curlObjData *)curlDataPtr;
+    register int        curl_retcode;
+    int                 code;
+    int                 cmd_list_size;
+    const char        **argvPtr;
+    int                 argcPtr;
+    Tcl_Obj**           objList;
+    int                 i;
 
-    objv[0]=Tcl_NewStringObj(curlData->writeProc,-1);
-    objv[1]=Tcl_NewByteArrayObj(ptr,realsize);
     if (curlData->cancelTransVarName) {
         if (curlData->cancelTrans) {
-            curlData->cancelTrans=0;
+            curlData->cancelTrans = 0;
             return -1;
         }
     }
-    if (Tcl_EvalObjv(curlData->interp,2,objv,TCL_EVAL_GLOBAL)!=TCL_OK) {
+
+    curl_retcode = realsize;
+    if (Tcl_SplitList(curlData->interp,curlData->writeProc,&argcPtr,&argvPtr) != TCL_OK) {
         return -1;
     }
-    return realsize;
+
+    cmd_list_size = argcPtr;
+
+    objList = (Tcl_Obj **) Tcl_Alloc((cmd_list_size+1)*sizeof(Tcl_Obj*));
+    for (i = 0; i < cmd_list_size; i++) {
+        objList[i] = Tcl_NewStringObj(argvPtr[i],-1);
+        Tcl_IncrRefCount(objList[i]);
+    }
+    objList[cmd_list_size] = Tcl_NewByteArrayObj(ptr,realsize);
+    Tcl_IncrRefCount(objList[cmd_list_size]);
+
+    code = Tcl_EvalObjv(curlData->interp,cmd_list_size+1,objList,TCL_EVAL_GLOBAL);
+    if (code != TCL_OK) {
+        curl_retcode = -1;
+    }
+    for (i = 0; i <= cmd_list_size; i++) { Tcl_DecrRefCount(objList[i]); }
+    Tcl_Free(objList);
+
+    return curl_retcode;
 }
 
 /*
@@ -2652,15 +2796,16 @@ curlWriteProcInvoke(void *ptr,size_t size,size_t nmemb,FILE *curlDataPtr) {
  *  This is the function that will be invoked as a callback when the user
  *  wants to invoke a Tcl procedure to read the data to send.
  *
- * Parameter:
+ * Parameters:
  *  header: string with the header line.
  *  size and nmemb: it so happens size * nmemb if the size of the
  *  header string.
  *  curlData: A pointer to the curlData structure for the transfer.
  *
- * Returns
+ * Results:
  *  The number of bytes actually read or CURL_READFUNC_ABORT in case
  *  of error, in which case 'libcurl' will abort the transfer.
+ *
  *-----------------------------------------------------------------------
  */
 size_t
@@ -2669,12 +2814,8 @@ curlReadProcInvoke(void *ptr,size_t size,size_t nmemb,FILE *curlDataPtr) {
     struct curlObjData  *curlData=(struct curlObjData *)curlDataPtr;
     Tcl_Obj             *tclProcPtr;
     Tcl_Obj             *readDataPtr;
-    char                 tclCommand[300];
     unsigned char       *readBytes;
     int                  sizeRead;
-
-    snprintf(tclCommand,300,"%s %d",curlData->readProc,realsize);
-    tclProcPtr=Tcl_NewStringObj(tclCommand,-1);
 
     if (curlData->cancelTransVarName) {
         if (curlData->cancelTrans) {
@@ -2682,9 +2823,13 @@ curlReadProcInvoke(void *ptr,size_t size,size_t nmemb,FILE *curlDataPtr) {
             return CURL_READFUNC_ABORT;
         }
     }
+    tclProcPtr=Tcl_ObjPrintf("%s %d",curlData->readProc,realsize);
+    Tcl_IncrRefCount(tclProcPtr);
     if (Tcl_EvalObjEx(curlData->interp,tclProcPtr,TCL_EVAL_GLOBAL)!=TCL_OK) {
+        Tcl_DecrRefCount(tclProcPtr);
         return CURL_READFUNC_ABORT;
     }
+    Tcl_DecrRefCount(tclProcPtr);
     readDataPtr=Tcl_GetObjResult(curlData->interp);
     readBytes=Tcl_GetByteArrayFromObj(readDataPtr,&sizeRead);
     memcpy(ptr,readBytes,sizeRead);
@@ -2701,21 +2846,19 @@ curlReadProcInvoke(void *ptr,size_t size,size_t nmemb,FILE *curlDataPtr) {
  *  wants to invoke a Tcl procedure to process every wildcard matching file
  *  on a ftp transfer.
  *
- * Parameter:
+ * Parameters:
  *  transfer_info: a curl_fileinfo structure about the file.
  *  curlData: A pointer to the curlData structure for the transfer.
  *  remains: number of chunks remaining.
+ *
  *-----------------------------------------------------------------------
  */
 long
 curlChunkBgnProcInvoke (const void *transfer_info, void *curlDataPtr, int remains) {
     struct curlObjData             *curlData=(struct curlObjData *)curlDataPtr;
     Tcl_Obj                        *tclProcPtr;
-    char                            tclCommand[300];
     int                             i;
     const struct curl_fileinfo     *fileinfoPtr=(const struct curl_fileinfo *)transfer_info;
-
-    tclProcPtr=Tcl_NewStringObj(tclCommand,-1);
 
     if (curlData->chunkBgnVar==NULL) {
         curlData->chunkBgnVar=curlstrdup("fileData");
@@ -2723,7 +2866,7 @@ curlChunkBgnProcInvoke (const void *transfer_info, void *curlDataPtr, int remain
 
     Tcl_SetVar2(curlData->interp,curlData->chunkBgnVar,"filename",
             fileinfoPtr->filename,0);
-    
+
     switch(fileinfoPtr->filetype) {
         case 0:
             Tcl_SetVar2(curlData->interp,curlData->chunkBgnVar,"filetype",
@@ -2762,30 +2905,31 @@ curlChunkBgnProcInvoke (const void *transfer_info, void *curlDataPtr, int remain
                     "error",0);
             break;
     }
-    
+
     Tcl_SetVar2Ex(curlData->interp,curlData->chunkBgnVar,"time",
-            Tcl_NewLongObj(fileinfoPtr->time),0);    
+            Tcl_NewLongObj(fileinfoPtr->time),0);
 
     Tcl_SetVar2Ex(curlData->interp,curlData->chunkBgnVar,"perm",
-            Tcl_NewIntObj(fileinfoPtr->perm),0);    
+            Tcl_NewIntObj(fileinfoPtr->perm),0);
 
     Tcl_SetVar2Ex(curlData->interp,curlData->chunkBgnVar,"uid",
-            Tcl_NewIntObj(fileinfoPtr->uid),0);    
+            Tcl_NewIntObj(fileinfoPtr->uid),0);
     Tcl_SetVar2Ex(curlData->interp,curlData->chunkBgnVar,"gid",
             Tcl_NewIntObj(fileinfoPtr->gid),0);
     Tcl_SetVar2Ex(curlData->interp,curlData->chunkBgnVar,"size",
-            Tcl_NewLongObj(fileinfoPtr->size),0);    
+            Tcl_NewLongObj(fileinfoPtr->size),0);
     Tcl_SetVar2Ex(curlData->interp,curlData->chunkBgnVar,"hardlinks",
             Tcl_NewIntObj(fileinfoPtr->hardlinks),0);
     Tcl_SetVar2Ex(curlData->interp,curlData->chunkBgnVar,"flags",
             Tcl_NewIntObj(fileinfoPtr->flags),0);
 
-    snprintf(tclCommand,300,"%s %d",curlData->chunkBgnProc,remains);
-    tclProcPtr=Tcl_NewStringObj(tclCommand,-1);
-
+    tclProcPtr=Tcl_ObjPrintf("%s %d",curlData->chunkBgnProc,remains);
+    Tcl_IncrRefCount(tclProcPtr);
     if (Tcl_EvalObjEx(curlData->interp,tclProcPtr,TCL_EVAL_GLOBAL)!=TCL_OK) {
+        Tcl_DecrRefCount(tclProcPtr);
         return CURL_CHUNK_BGN_FUNC_FAIL;
     }
+    Tcl_DecrRefCount(tclProcPtr);
 
     if (Tcl_GetIntFromObj(curlData->interp,Tcl_GetObjResult(curlData->interp),&i)!=TCL_OK) {
         return CURL_CHUNK_BGN_FUNC_FAIL;
@@ -2808,10 +2952,11 @@ curlChunkBgnProcInvoke (const void *transfer_info, void *curlDataPtr, int remain
  *  been downloaded or skipped, it does little more than called the
  *  given proc.
  *
- * Parameter:
+ * Parameters:
  *  curlData: A pointer to the curlData structure for the transfer.
  *
- * Returns
+ * Results:
+ *
  *-----------------------------------------------------------------------
  */
 long
@@ -2819,15 +2964,15 @@ curlChunkEndProcInvoke (void *curlDataPtr) {
 
     struct curlObjData      *curlData=(struct curlObjData *)curlDataPtr;
     Tcl_Obj                 *tclProcPtr;
-    char                     tclCommand[300];
     int                      i;
 
-    snprintf(tclCommand,300,"%s",curlData->chunkEndProc);
-    tclProcPtr=Tcl_NewStringObj(tclCommand,-1);
-
+    tclProcPtr=Tcl_NewStringObj(curlData->chunkEndProc,-1);
+    Tcl_IncrRefCount(tclProcPtr);
     if (Tcl_EvalObjEx(curlData->interp,tclProcPtr,TCL_EVAL_GLOBAL)!=TCL_OK) {
+        Tcl_DecrRefCount(tclProcPtr);
         return CURL_CHUNK_END_FUNC_FAIL;
     }
+    Tcl_DecrRefCount(tclProcPtr);
 
     if (Tcl_GetIntFromObj(curlData->interp,Tcl_GetObjResult(curlData->interp),&i)!=TCL_OK) {
         return CURL_CHUNK_END_FUNC_FAIL;
@@ -2835,7 +2980,7 @@ curlChunkEndProcInvoke (void *curlDataPtr) {
     if (i==1) {
         return CURL_CHUNK_BGN_FUNC_FAIL;
     }
-    return CURL_CHUNK_END_FUNC_OK;    
+    return CURL_CHUNK_END_FUNC_OK;
 }
 
 /*
@@ -2847,25 +2992,27 @@ curlChunkEndProcInvoke (void *curlDataPtr) {
  *  matches a pattern when doing a 'wildcard' download. It invokes a Tcl
  *  proc to do the actual work.
  *
- * Parameter:
+ * Parameters:
  *  curlData: A pointer to the curlData structure for the transfer.
  *  pattern: The pattern to match.
  *  filename: The file name to be matched.
+ *
  *-----------------------------------------------------------------------
  */
-int curlfnmatchProcInvoke(void *curlDataPtr, const char *pattern, const char *filename) {
+int
+curlfnmatchProcInvoke(void *curlDataPtr, const char *pattern, const char *filename) {
 
     struct curlObjData      *curlData=(struct curlObjData *)curlDataPtr;
     Tcl_Obj                 *tclProcPtr;
-    char                     tclCommand[500];
     int                      i;
 
-    snprintf(tclCommand,500,"%s %s %s",curlData->fnmatchProc,pattern,filename);
-    tclProcPtr=Tcl_NewStringObj(tclCommand,-1);
-
+    tclProcPtr=Tcl_ObjPrintf("%s %s %s",curlData->fnmatchProc,pattern,filename);
+    Tcl_IncrRefCount(tclProcPtr);
     if (Tcl_EvalObjEx(curlData->interp,tclProcPtr,TCL_EVAL_GLOBAL)!=TCL_OK) {
+        Tcl_DecrRefCount(tclProcPtr);
         return CURL_FNMATCHFUNC_FAIL;
     }
+    Tcl_DecrRefCount(tclProcPtr);
 
     if (Tcl_GetIntFromObj(curlData->interp,Tcl_GetObjResult(curlData->interp),&i)!=TCL_OK) {
         return CURL_FNMATCHFUNC_FAIL;
@@ -2888,12 +3035,13 @@ int curlfnmatchProcInvoke(void *curlDataPtr, const char *pattern, const char *fi
  *  Tcl_Obj with a list, the first element is the type ok key, the second
  *  the key itself.
  *
- * Parameter:
+ * Parameters:
  *  interp: The interp need to deal with the objects.
  *  key: a curl_khkey struct with the key.
  *
- * Returns
+ * Results:
  *  The object with the list.
+ *
  *-----------------------------------------------------------------------
  */
 Tcl_Obj *
@@ -2930,7 +3078,7 @@ curlsshkeyextract(Tcl_Interp *interp,const struct curl_khkey *key) {
  *  This is the function that will be invoked as a callback when the user
  *  wants to invoke a Tcl procedure to decide about this new ssh host
  *
- * Parameter:
+ * Parameters:
  *  curl: curl's easy handle for the connection.
  *  knownkey:    The key from the hosts_file.
  *  foundkey:    The key from the remote site.
@@ -2938,8 +3086,9 @@ curlsshkeyextract(Tcl_Interp *interp,const struct curl_khkey *key) {
  *  curlDataPtr: Points to the structure with all the TclCurl data
  *               for the connection.
  *
- * Returns
+ * Results:
  *  A libcurl return code so that libcurl knows what to do.
+ *
  *-----------------------------------------------------------------------
  */
 size_t
@@ -2953,6 +3102,7 @@ curlsshkeycallback(CURL *curl ,const struct curl_khkey *knownkey,
     Tcl_Obj             *returnObjPtr;
 
     int                  action;
+    int                  i, result;
 
     interp=tclcurlDataPtr->interp;
 
@@ -2974,7 +3124,10 @@ curlsshkeycallback(CURL *curl ,const struct curl_khkey *knownkey,
             objv[3]=Tcl_NewStringObj("error",-1);
     }
 
-    if (Tcl_EvalObjv(interp,4,objv,TCL_EVAL_GLOBAL)!=TCL_OK)      {return CURLKHSTAT_REJECT;}
+    for (i=0;i<4;i++) Tcl_IncrRefCount(objv[i]);
+    result=Tcl_EvalObjv(interp,4,objv,TCL_EVAL_GLOBAL);
+    for (i=0;i<4;i++) Tcl_DecrRefCount(objv[i]);
+    if (result!=TCL_OK)      {return CURLKHSTAT_REJECT;}
 
     returnObjPtr=Tcl_GetObjResult(interp);
 
@@ -3002,31 +3155,24 @@ curlsshkeycallback(CURL *curl ,const struct curl_khkey *knownkey,
  *  wants to invoke a Tcl procedure to write the debug data produce by
  *  the verbose option.
  *
- *  Parameter:
+ * Parameters:
  *   curlHandle: A pointer to the handle for the transfer.
  *   infoType: Integer with the type of data.
  *   dataPtr: the data passed to the procedure.
  *   curlDataPtr: ointer to the curlData structure for the transfer.
  *
- *  Returns
+ * Results:
  *   The number of bytes actually written or -1 in case of error, in
  *   which case 'libcurl' will abort the transfer.
+ *
  *-----------------------------------------------------------------------
  */
 int
 curlDebugProcInvoke(CURL *curlHandle, curl_infotype infoType,
         char * dataPtr, size_t size, void  *curlDataPtr) {
     struct curlObjData  *curlData=(struct curlObjData *)curlDataPtr;
-    Tcl_Obj             *tclProcPtr;
     Tcl_Obj             *objv[3];
-    char                tclCommand[300];
-
-    snprintf(tclCommand,300,"%s %d %d",curlData->debugProc,(int)infoType,(int)size);
-    tclProcPtr=Tcl_NewStringObj(tclCommand,-1);
-
-    objv[0]=Tcl_NewStringObj(curlData->debugProc,-1);
-    objv[1]=Tcl_NewIntObj(infoType);
-    objv[2]=Tcl_NewByteArrayObj((CONST unsigned char *)dataPtr,size);
+    int                  i;
 
     if (curlData->cancelTransVarName) {
         if (curlData->cancelTrans) {
@@ -3035,7 +3181,12 @@ curlDebugProcInvoke(CURL *curlHandle, curl_infotype infoType,
         }
     }
 
+    objv[0]=Tcl_NewStringObj(curlData->debugProc,-1);
+    objv[1]=Tcl_NewIntObj(infoType);
+    objv[2]=Tcl_NewByteArrayObj((const unsigned char *)dataPtr,size);
+    for (i=0;i<3;i++) Tcl_IncrRefCount(objv[i]);
     Tcl_EvalObjv(curlData->interp,3,objv,TCL_EVAL_GLOBAL);
+    for (i=0;i<3;i++) Tcl_DecrRefCount(objv[i]);
 
     return 0;
 }
@@ -3047,11 +3198,12 @@ curlDebugProcInvoke(CURL *curlHandle, curl_infotype infoType,
  *
  *  Invokes the 'curl_easy_getinfo' function in libcurl.
  *
- * Parameter:
+ * Parameters:
  *
  * Results:
  *   0 if all went well.
  *   The CURLcode for the error.
+ *
  *----------------------------------------------------------------------
  */
 CURLcode
@@ -3293,7 +3445,7 @@ curlGetInfo(Tcl_Interp *interp,CURL *curlHandle,int tableIndex) {
                 return exitCode;
             }
             resultObjPtr=Tcl_NewListObj(0,(Tcl_Obj **)NULL);
-            while(slistPtr!=NULL) {
+            while (slistPtr!=NULL) {
                 Tcl_ListObjAppendElement(interp,resultObjPtr
                         ,Tcl_NewStringObj(slistPtr->data,-1));
                 slistPtr=slistPtr->next;
@@ -3317,7 +3469,7 @@ curlGetInfo(Tcl_Interp *interp,CURL *curlHandle,int tableIndex) {
                 return exitCode;
             }
             resultObjPtr=Tcl_NewListObj(0,(Tcl_Obj **)NULL);
-            while(slistPtr!=NULL) {
+            while (slistPtr!=NULL) {
                 Tcl_ListObjAppendElement(interp,resultObjPtr
                         ,Tcl_NewStringObj(slistPtr->data,-1));
                 slistPtr=slistPtr->next;
@@ -3358,17 +3510,14 @@ curlGetInfo(Tcl_Interp *interp,CURL *curlHandle,int tableIndex) {
             Tcl_SetObjResult(interp,resultObjPtr);
             break;
         case 32:
-            exitCode=curl_easy_getinfo(curlHandle,CURLINFO_CERTINFO,certinfoPtr);
+            exitCode=curl_easy_getinfo(curlHandle,CURLINFO_CERTINFO,&certinfoPtr);
             if (exitCode) {
                 return exitCode;
             }
-            charPtr=(char *)Tcl_Alloc(3);
-            sprintf(charPtr,"%d",certinfoPtr->num_of_certs);
             resultObjPtr=Tcl_NewListObj(0,(Tcl_Obj **)NULL);
-            Tcl_ListObjAppendElement(interp,resultObjPtr,Tcl_NewStringObj(charPtr,-1));
-            Tcl_Free(charPtr);
-            for(i=0; i < certinfoPtr->num_of_certs; i++) {
-                for(slistPtr = certinfoPtr->certinfo[i]; slistPtr; slistPtr=slistPtr->next) {
+            Tcl_ListObjAppendElement(interp,resultObjPtr,Tcl_NewIntObj(certinfoPtr->num_of_certs));
+            for (i=0; i < certinfoPtr->num_of_certs; i++) {
+                for (slistPtr = certinfoPtr->certinfo[i]; slistPtr; slistPtr=slistPtr->next) {
                     Tcl_ListObjAppendElement(interp,resultObjPtr,Tcl_NewStringObj(slistPtr->data,-1));
                 }
             }
@@ -3410,7 +3559,7 @@ curlGetInfo(Tcl_Interp *interp,CURL *curlHandle,int tableIndex) {
             Tcl_SetObjResult(interp,resultObjPtr);
             break;
     }
-    return 0;            
+    return 0;
 }
 
 /*
@@ -3427,7 +3576,8 @@ curlGetInfo(Tcl_Interp *interp,CURL *curlHandle,int tableIndex) {
  *    objc and objv: The usual in Tcl.
  *
  * Results:
- *    A standard Tcl result.
+ *	A standard Tcl result.
+ *
  *----------------------------------------------------------------------
  */
 void
@@ -3493,12 +3643,12 @@ curlFreeSpace(struct curlObjData *curlData) {
  */
 int
 curlDupHandle(Tcl_Interp *interp, struct curlObjData *curlData,
-        int objc, Tcl_Obj *CONST objv[]) {
+        int objc, Tcl_Obj *const objv[]) {
 
     CURL                *newCurlHandle;
     Tcl_Obj             *result;
     struct curlObjData  *newCurlData;
-    char                *handleName;
+    Tcl_Obj             *handleObj;
 
     newCurlHandle=curl_easy_duphandle(curlData->curl);
     if (newCurlHandle==NULL) {
@@ -3507,17 +3657,15 @@ curlDupHandle(Tcl_Interp *interp, struct curlObjData *curlData,
         return TCL_ERROR;
     }
 
-    newCurlData=(struct curlObjData *)Tcl_Alloc(sizeof(struct curlObjData));    
+    newCurlData=(struct curlObjData *)Tcl_Alloc(sizeof(struct curlObjData));
 
     curlCopyCurlData(curlData,newCurlData);
 
-    handleName=curlCreateObjCmd(interp,newCurlData);
+    handleObj=curlCreateObjCmd(interp,newCurlData);
 
     newCurlData->curl=newCurlHandle;
 
-    result=Tcl_NewStringObj(handleName,-1);
-    Tcl_SetObjResult(interp,result);
-    Tcl_Free(handleName);
+    Tcl_SetObjResult(interp,handleObj);
 
     return TCL_OK;
 }
@@ -3551,7 +3699,7 @@ curlResetHandle(Tcl_Interp *interp, struct curlObjData *curlData)  {
     tmpPtr->token      = curlData->token;
     tmpPtr->shareToken = curlData->shareToken;
     tmpPtr->interp     = curlData->interp;
-    
+
     curlFreeSpace(curlData);
     memset(curlData, 0, sizeof(struct curlObjData));
 
@@ -3592,11 +3740,9 @@ curlVersion (ClientData clientData, Tcl_Interp *interp,
     int objc,Tcl_Obj *CONST objv[]) {
 
     Tcl_Obj     *versionPtr;
-    char        tclversion[200];
 
-    sprintf(tclversion,"TclCurl Version %s (%s)",TclCurlVersion,
+    versionPtr=Tcl_ObjPrintf("TclCurl Version %s (%s)",TclCurlVersion,
                                                  curl_version());
-    versionPtr=Tcl_NewStringObj(tclversion,-1);
     Tcl_SetObjResult(interp,versionPtr);
 
     return TCL_OK;
@@ -3624,14 +3770,14 @@ curlVersion (ClientData clientData, Tcl_Interp *interp,
  */
 int
 curlEscape(ClientData clientData, Tcl_Interp *interp,
-    int objc,Tcl_Obj *CONST objv[]) {
+    int objc,Tcl_Obj *const objv[]) {
 
     Tcl_Obj        *resultObj;
     char           *escapedStr;
 
     escapedStr=curl_easy_escape(NULL,Tcl_GetString(objv[1]),0);
 
-    if(!escapedStr) {
+    if (!escapedStr) {
         resultObj=Tcl_NewStringObj("curl::escape bad parameter",-1);
         Tcl_SetObjResult(interp,resultObj);
         return TCL_ERROR;
@@ -3665,13 +3811,13 @@ curlEscape(ClientData clientData, Tcl_Interp *interp,
  */
 int
 curlUnescape(ClientData clientData, Tcl_Interp *interp,
-    int objc,Tcl_Obj *CONST objv[]) {
+    int objc,Tcl_Obj *const objv[]) {
 
     Tcl_Obj        *resultObj;
     char           *unescapedStr;
 
     unescapedStr=curl_easy_unescape(NULL,Tcl_GetString(objv[1]),0,NULL);
-    if(!unescapedStr) {
+    if (!unescapedStr) {
         resultObj=Tcl_NewStringObj("curl::unescape bad parameter",-1);
         Tcl_SetObjResult(interp,resultObj);
         return TCL_ERROR;
@@ -3704,7 +3850,7 @@ curlUnescape(ClientData clientData, Tcl_Interp *interp,
  */
 int
 curlVersionInfo (ClientData clientData, Tcl_Interp *interp,
-    int objc,Tcl_Obj *CONST objv[]) {
+    int objc,Tcl_Obj *const objv[]) {
 
     int                            tableIndex;
     int                            i;
@@ -3714,7 +3860,7 @@ curlVersionInfo (ClientData clientData, Tcl_Interp *interp,
 
     if (objc!=2) {
         resultObjPtr=Tcl_NewStringObj("usage: curl::versioninfo -option",-1);
-        Tcl_SetObjResult(interp,resultObjPtr); 
+        Tcl_SetObjResult(interp,resultObjPtr);
         return TCL_ERROR;
     }
 
@@ -3730,8 +3876,7 @@ curlVersionInfo (ClientData clientData, Tcl_Interp *interp,
             resultObjPtr=Tcl_NewStringObj(infoPtr->version,-1);
             break;
         case 1:
-            sprintf(tmp,"%X",infoPtr->version_num);
-            resultObjPtr=Tcl_NewStringObj(tmp,-1);
+            resultObjPtr=Tcl_ObjPrintf("%X",infoPtr->version_num);
             break;
         case 2:
             resultObjPtr=Tcl_NewStringObj(infoPtr->host,-1);
@@ -3802,7 +3947,7 @@ curlVersionInfo (ClientData clientData, Tcl_Interp *interp,
             break;
         case 7:
             resultObjPtr=Tcl_NewListObj(0,(Tcl_Obj **)NULL);
-            for(i=0;;i++) {
+            for (i=0;;i++) {
                 if (infoPtr->protocols[i]!=NULL) {
                     Tcl_ListObjAppendElement(interp,resultObjPtr
                             ,Tcl_NewStringObj(infoPtr->protocols[i],-1));
@@ -3890,7 +4035,7 @@ curlCopyCurlData (struct curlObjData *curlDataOld,
     curlDataNew->chunkBgnVar=curlstrdup(curlDataOld->chunkBgnVar);
     curlDataNew->chunkEndProc=curlstrdup(curlDataOld->chunkEndProc);
     curlDataNew->fnmatchProc=curlstrdup(curlDataOld->fnmatchProc);
-    
+
     curlDataNew->bodyVar.memory=(char *)Tcl_Alloc(curlDataOld->bodyVar.size);
     memcpy(curlDataNew->bodyVar.memory,curlDataOld->bodyVar.memory
             ,curlDataOld->bodyVar.size);
@@ -3899,19 +4044,21 @@ curlCopyCurlData (struct curlObjData *curlDataOld,
     return TCL_OK;
 }
 
-/*----------------------------------------------------------------------
+/*
+ *----------------------------------------------------------------------
  *
  * curlOpenFiles --
  *
- *  Before doing a transfer with the easy interface or adding an easy
- *  handle to a multi one, this function takes care of opening all
- *  necessary files for the transfer.
+ *	Before doing a transfer with the easy interface or adding an easy
+ *	handle to a multi one, this function takes care of opening all
+ *	necessary files for the transfer.
  *
- * Parameter:
- *  curlData: The pointer to the struct with the transfer data.
+ * Parameters:
+ *	curlData: The pointer to the struct with the transfer data.
  *
  * Results:
- *  '0' all went well, '1' in case of error.
+ *	'0' all went well, '1' in case of error.
+ *
  *----------------------------------------------------------------------
  */
 int
@@ -3931,7 +4078,7 @@ curlOpenFiles(Tcl_Interp *interp,struct curlObjData *curlData) {
         }
         curl_easy_setopt(curlData->curl,CURLOPT_READDATA,curlData->inHandle);
         if (curlData->anyAuthFlag) {
-            curl_easy_setopt(curlData->curl, CURLOPT_SEEKFUNCTION, curlseek);
+            curl_easy_setopt(curlData->curl, CURLOPT_SEEKFUNCTION, (curl_seek_callback)curlseek);
             curl_easy_setopt(curlData->curl, CURLOPT_SEEKDATA, curlData->inHandle);
         }
     }
@@ -3956,8 +4103,8 @@ curlOpenFiles(Tcl_Interp *interp,struct curlObjData *curlData) {
  *
  *  Closes the files opened during a transfer.
  *
- * Parameter:
- *  curlData: The pointer to the struct with the transfer data.
+ * Parameters:
+ *	curlData: The pointer to the struct with the transfer data.
  *
  *----------------------------------------------------------------------
  */
@@ -4027,8 +4174,7 @@ curlOpenFile(Tcl_Interp *interp,char *fileName, FILE **handle, int writing, int 
     Tcl_DStringFree(&nativeString);
 #endif
     if (*handle==NULL) {
-        snprintf(errorMsg,300,"Couldn't open file %s.",fileName);
-        resultObjPtr=Tcl_NewStringObj(errorMsg,-1);
+        resultObjPtr=Tcl_ObjPrintf("Couldn't open file %s",fileName);
         Tcl_SetObjResult(interp,resultObjPtr);
         return 1;
     }
@@ -4049,7 +4195,7 @@ curlOpenFile(Tcl_Interp *interp,char *fileName, FILE **handle, int writing, int 
 int
 curlseek(void *instream, curl_off_t offset, int origin)
 {
-    if(-1 == fseek((FILE *)instream, 0, origin)) {
+    if (-1 == fseek((FILE *)instream, 0, origin)) {
           return CURLIOE_FAILRESTART;
     }
     return CURLIOE_OK;
@@ -4062,9 +4208,9 @@ curlseek(void *instream, curl_off_t offset, int origin)
  *  In case there is going to be a post transfer, this function sets the
  *  data that is going to be posted.
  *
- * Parameter:
- *  interp: Tcl interpreter we are using.
- *  curlData: A pointer to the struct with the transfer data.
+ * Parameters:
+ *	interp: Tcl interpreter we are using.
+ *	curlData: A pointer to the struct with the transfer data.
  *
  * Results:
  *  A standard Tcl result.
@@ -4096,7 +4242,7 @@ curlSetPostData(Tcl_Interp *interp,struct curlObjData *curlDataPtr) {
  *  curlData: A pointer to the struct with the transfer data.
  *----------------------------------------------------------------------
  */
-void 
+void
 curlResetPostData(struct curlObjData *curlDataPtr) {
     struct formArrayStruct       *tmpPtr;
 
@@ -4106,7 +4252,7 @@ curlResetPostData(struct curlObjData *curlDataPtr) {
         curlDataPtr->postListLast=NULL;
         curl_easy_setopt(curlDataPtr->curl,CURLOPT_HTTPPOST,NULL);
 
-        while(curlDataPtr->formArray!=NULL) {
+        while (curlDataPtr->formArray!=NULL) {
             if (curlDataPtr->formArray->formHeaderList!=NULL) {
                 curl_slist_free_all(curlDataPtr->formArray->formHeaderList);
                 curlDataPtr->formArray->formHeaderList=NULL;
@@ -4129,7 +4275,7 @@ curlResetPostData(struct curlObjData *curlDataPtr) {
  *  formArray: A pointer to the array to clean up.
  *----------------------------------------------------------------------
  */
-void 
+void
 curlResetFormArray(struct curl_forms *formArray) {
     int        i;
 
@@ -4147,7 +4293,7 @@ curlResetFormArray(struct curl_forms *formArray) {
                 break;
             default:
                 break;
-        } 
+        }
     }
     Tcl_Free((char *)formArray);
 }
@@ -4164,7 +4310,7 @@ curlResetFormArray(struct curl_forms *formArray) {
  *  curlData: A pointer to the struct with the transfer data.
  *----------------------------------------------------------------------
  */
-void 
+void
 curlSetBodyVarName(Tcl_Interp *interp,struct curlObjData *curlDataPtr) {
     Tcl_Obj    *bodyVarNameObjPtr, *bodyVarObjPtr;
 
@@ -4182,13 +4328,14 @@ curlSetBodyVarName(Tcl_Interp *interp,struct curlObjData *curlDataPtr) {
 /*----------------------------------------------------------------------
  *
  * curlstrdup --
- *   The same as strdup, but won't seg fault if the string to copy is NULL.
+ *	The same as strdup, but won't seg fault if the string to copy is NULL.
  *
- * Parameter:
- *   old: The original one.
+ * Parameters:
+ *	old: The original one.
  *
  * Results:
- *   Returns a pointer to the new string.
+ *	Returns a pointer to the new string.
+ *
  *----------------------------------------------------------------------
  */
 char
@@ -4207,7 +4354,7 @@ char
 /*
  *----------------------------------------------------------------------
  *
- * curlShareInitObjCmd --
+ * curlCreateShareObjCmd --
  *
  *  Looks for the first free share handle (scurl1, scurl2,...) and
  *  creates a Tcl command for it.
@@ -4220,28 +4367,26 @@ char
  *
  *----------------------------------------------------------------------
  */
-
-char *
+Tcl_Obj *
 curlCreateShareObjCmd (Tcl_Interp *interp,struct shcurlObjData  *shcurlData) {
-    char                *shandleName;
+    char                shandleName[32];
     int                 i;
     Tcl_CmdInfo         info;
     Tcl_Command         cmdToken;
 
     /* We try with scurl1, if it already exists with scurl2...*/
-    shandleName=(char *)Tcl_Alloc(32);
     for (i=1;;i++) {
         sprintf(shandleName,"scurl%d",i);
         if (!Tcl_GetCommandInfo(interp,shandleName,&info)) {
             cmdToken=Tcl_CreateObjCommand(interp,shandleName,curlShareObjCmd,
-                                (ClientData)shcurlData, 
+                                (ClientData)shcurlData,
                                 (Tcl_CmdDeleteProc *)curlCleanUpShareCmd);
             break;
         }
     }
     shcurlData->token=cmdToken;
 
-    return shandleName;
+    return Tcl_NewStringObj(shandleName,-1);
 }
 
 /*
@@ -4268,7 +4413,7 @@ curlShareInitObjCmd (ClientData clientData, Tcl_Interp *interp,
     Tcl_Obj               *resultPtr;
     CURL                  *shcurlHandle;
     struct shcurlObjData  *shcurlData;
-    char                  *shandleName;
+    Tcl_Obj               *shandleObj;
 
     shcurlData=(struct shcurlObjData *)Tcl_Alloc(sizeof(struct shcurlObjData));
     if (shcurlData==NULL) {
@@ -4286,13 +4431,11 @@ curlShareInitObjCmd (ClientData clientData, Tcl_Interp *interp,
         return TCL_ERROR;
     }
 
-    shandleName=curlCreateShareObjCmd(interp,shcurlData);
+    shandleObj=curlCreateShareObjCmd(interp,shcurlData);
 
     shcurlData->shandle=shcurlHandle;
 
-    resultPtr=Tcl_NewStringObj(shandleName,-1);
-    Tcl_SetObjResult(interp,resultPtr);
-    Tcl_Free(shandleName);
+    Tcl_SetObjResult(interp,shandleObj);
 
 #ifdef TCL_THREADS
     curl_share_setopt(shcurlHandle, CURLSHOPT_LOCKFUNC, curlShareLockFunc);
@@ -4394,7 +4537,7 @@ curlShareUnLockFunc(CURL *handle, curl_lock_data data, void *userptr) {
  */
 int
 curlShareObjCmd (ClientData clientData, Tcl_Interp *interp,
-    int objc,Tcl_Obj *CONST objv[]) {
+    int objc,Tcl_Obj *const objv[]) {
 
     struct shcurlObjData     *shcurlData=(struct shcurlObjData *)clientData;
     CURLSH                   *shcurlHandle=shcurlData->shandle;
@@ -4413,6 +4556,10 @@ curlShareObjCmd (ClientData clientData, Tcl_Interp *interp,
     switch(tableIndex) {
         case 0:
         case 1:
+            if (objc != 3) {
+                Tcl_WrongNumArgs(interp,2,objv,"arg");
+                return TCL_ERROR;
+            }
             if (Tcl_GetIndexFromObj(interp, objv[2], lockData,
                 "data to lock ",TCL_EXACT,&dataIndex)==TCL_ERROR) {
                 return TCL_ERROR;
@@ -4432,6 +4579,10 @@ curlShareObjCmd (ClientData clientData, Tcl_Interp *interp,
             }
             break;
         case 2:
+            if (objc != 2) {
+                Tcl_WrongNumArgs(interp,2,objv,"");
+                return TCL_ERROR;
+            }
             Tcl_DeleteCommandFromToken(interp,shcurlData->token);
             break;
     }
@@ -4478,15 +4629,13 @@ curlCleanUpShareCmd(ClientData clientData) {
  *----------------------------------------------------------------------
  */
 int
-curlErrorStrings (Tcl_Interp *interp, Tcl_Obj *CONST objv,int type) {
+curlErrorStrings (Tcl_Interp *interp, Tcl_Obj *const objv,int type) {
 
     Tcl_Obj               *resultPtr;
     int                    errorCode;
-    char                   errorMsg[500];
 
     if (Tcl_GetIntFromObj(interp,objv,&errorCode)) {
-        snprintf(errorMsg,500,"Invalid error code: %s",Tcl_GetString(objv));
-        resultPtr=Tcl_NewStringObj(errorMsg,-1);
+        resultPtr=Tcl_ObjPrintf("Invalid error code: %s",Tcl_GetString(objv));
         Tcl_SetObjResult(interp,resultPtr);
         return 1;
     }
@@ -4527,7 +4676,7 @@ curlErrorStrings (Tcl_Interp *interp, Tcl_Obj *CONST objv,int type) {
  */
 int
 curlEasyStringError (ClientData clientData, Tcl_Interp *interp,
-        int objc,Tcl_Obj *CONST objv[]) {
+        int objc,Tcl_Obj *const objv[]) {
 
     if (objc<2) {
         Tcl_WrongNumArgs(interp,1,objv,"errorCode");
@@ -4559,7 +4708,7 @@ curlEasyStringError (ClientData clientData, Tcl_Interp *interp,
  */
 int
 curlShareStringError (ClientData clientData, Tcl_Interp *interp,
-        int objc,Tcl_Obj *CONST objv[]) {
+        int objc,Tcl_Obj *const objv[]) {
 
     if (objc<2) {
         Tcl_WrongNumArgs(interp,1,objv,"errorCode");
@@ -4591,7 +4740,7 @@ curlShareStringError (ClientData clientData, Tcl_Interp *interp,
  */
 int
 curlMultiStringError (ClientData clientData, Tcl_Interp *interp,
-        int objc,Tcl_Obj *CONST objv[]) {
+        int objc,Tcl_Obj *const objv[]) {
 
     if (objc<2) {
         Tcl_WrongNumArgs(interp,1,objv,"errorCode");

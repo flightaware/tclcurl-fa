@@ -389,7 +389,7 @@ int Tclcurl_MultiInit (Tcl_Interp *interp);
 
 EXTERN int Tclcurl_Init(Tcl_Interp *interp);
 
-char *curlCreateObjCmd(Tcl_Interp *interp,struct curlObjData  *curlData);
+Tcl_Obj* curlCreateObjCmd(Tcl_Interp *interp,struct curlObjData  *curlData);
 int curlInitObjCmd(ClientData clientData, Tcl_Interp *interp, int objc,
         Tcl_Obj *CONST objv[]);
 int curlObjCmd(ClientData clientData, Tcl_Interp *interp, int objc,
@@ -488,7 +488,7 @@ void curlSetBodyVarName(Tcl_Interp *interp,struct curlObjData *curlDataPtr);
 char *curlstrdup (char *old);
 
 
-char *curlCreateShareObjCmd (Tcl_Interp *interp,struct shcurlObjData  *shcurlData);
+Tcl_Obj* curlCreateShareObjCmd (Tcl_Interp *interp,struct shcurlObjData  *shcurlData);
 int curlShareInitObjCmd (ClientData clientData, Tcl_Interp *interp,
         int objc,Tcl_Obj *CONST objv[]);
 int curlShareObjCmd (ClientData clientData, Tcl_Interp *interp,
