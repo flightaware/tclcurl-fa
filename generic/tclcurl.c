@@ -2784,7 +2784,7 @@ curlWriteProcInvoke(void *ptr,size_t size,size_t nmemb,FILE *curlDataPtr) {
     }
     for (i = 0; i <= cmd_list_size; i++) { Tcl_DecrRefCount(objList[i]); }
     Tcl_Free(objList);
-
+    Tcl_Free(argvPtr);
     return curl_retcode;
 }
 
