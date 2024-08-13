@@ -38,37 +38,13 @@ jobs:
     - name: Init MSVC
       uses: ilammy/msvc-dev-cmd@v1
 
-    - name: Cache vcpkg curl dependency
-      id: curl-cache
-      uses: actions/cache@v2
-      with:
-        path: C:/vcpkg/packages/curl_x64-windows-static
-        key: ${{ runner.os }}-vcpkgcurl
-
-    - name: Cache vcpkg zlib dependency
-      id: zlib-cache
-      uses: actions/cache@v2
-      with:
-        path: C:/vcpkg/packages/zlib_x64-windows-static
-        key: ${{ runner.os }}-vcpkgzlib
-
     - name: Install zlib with vcpkg
-      if: steps.zlib-cache.outputs.cache-hit != 'true'
       run: vcpkg install zlib:x64-windows-static
 
     - name: Install curl with vcpkg
-      if: steps.curl-cache.outputs.cache-hit != 'true'
       run: vcpkg install curl:x64-windows-static
 
-    - name: Cache Tcl build
-      id: tcl-cache
-      uses: actions/cache@v2
-      with:
-        path: C:/tcl
-        key: ${{ runner.os }}-vcpkgzlib
-
     - name: Build Tcl
-      if: steps.tcl-cache.outputs.cache-hit != 'true'
       working-directory: tcl/win
       shell: cmd
       run: |
