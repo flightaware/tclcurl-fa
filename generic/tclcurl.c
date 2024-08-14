@@ -2783,8 +2783,8 @@ curlWriteProcInvoke(void *ptr,size_t size,size_t nmemb,FILE *curlDataPtr) {
         curl_retcode = -1;
     }
     for (i = 0; i <= cmd_list_size; i++) { Tcl_DecrRefCount(objList[i]); }
-    Tcl_Free(objList);
-    Tcl_Free(argvPtr);
+    Tcl_Free((char *)objList);
+    Tcl_Free((char *)argvPtr);
     return curl_retcode;
 }
 
@@ -3856,7 +3856,6 @@ curlVersionInfo (ClientData clientData, Tcl_Interp *interp,
     int                            i;
     curl_version_info_data        *infoPtr;
     Tcl_Obj                       *resultObjPtr=NULL;
-    char                           tmp[7];
 
     if (objc!=2) {
         resultObjPtr=Tcl_NewStringObj("usage: curl::versioninfo -option",-1);
@@ -4147,7 +4146,6 @@ curlCloseFiles(struct curlObjData *curlData) {
 int
 curlOpenFile(Tcl_Interp *interp,char *fileName, FILE **handle, int writing, int text) {
     Tcl_Obj        *resultObjPtr;
-    char            errorMsg[300];
 
 #ifdef _WIN32
     Tcl_DString     nativeString;
