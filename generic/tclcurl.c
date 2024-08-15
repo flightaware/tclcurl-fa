@@ -102,7 +102,7 @@ curlCreateObjCmd (Tcl_Interp *interp,struct curlObjData  *curlData) {
 
     /* We try with curl1, if it already exists with curl2...*/
     for (i=1;;i++) {
-        sprintf(handleName,"curl%d",i);
+        snprintf(handleName,sizeof(handleName),"curl%d",i);
         if (!Tcl_GetCommandInfo(interp,handleName,&info)) {
             cmdToken=Tcl_CreateObjCommand(interp,handleName,curlObjCmd,
                                 (ClientData)curlData,
