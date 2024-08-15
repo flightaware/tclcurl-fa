@@ -7,7 +7,7 @@
 ## Introduction
 
 TclCurl gives the Tcl programmer access to the facilities of libcurl. For more information
-about what libcurl is capable of check http://curl.haxx.se/
+about what libcurl is capable of check https://curl.se/
 
 To make type:
 
