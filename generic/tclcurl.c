@@ -4374,7 +4374,7 @@ curlCreateShareObjCmd (Tcl_Interp *interp,struct shcurlObjData  *shcurlData) {
 
     /* We try with scurl1, if it already exists with scurl2...*/
     for (i=1;;i++) {
-        sprintf(shandleName,"scurl%d",i);
+        snprintf(shandleName,sizeof(shandleName),"scurl%d",i);
         if (!Tcl_GetCommandInfo(interp,shandleName,&info)) {
             cmdToken=Tcl_CreateObjCommand(interp,shandleName,curlShareObjCmd,
                                 (ClientData)shcurlData,
