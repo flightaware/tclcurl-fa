@@ -1673,6 +1673,10 @@ Define maximum supported TLS version as TLSv1.3
 .RE
 
 .TP
+.B -sslversionandmax
+Provide a 2 item list of sslversion and ssl max version. This is to use both items at the same time. 
+
+.TP
 .B -sslverifypeer
 This option determines whether TclCurl verifies the authenticity of the peer's certificate.
 A 1 means it verifies; zero means it doesn't. The default is 1. 

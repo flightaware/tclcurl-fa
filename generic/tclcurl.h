@@ -267,7 +267,7 @@ CONST static char *configTable[] = {
     "-fnmatchproc",       "-resolve",            "-tlsauthusername",
     "-tlsauthpassword",   "-tlsauthtype",        "-transferencoding",
     "-gssapidelegation",  "-noproxy",            "-telnetoptions",
-    "-cainfoblob",
+    "-cainfoblob",        "-sslversionandmax",
     (char *) NULL
 };
 
@@ -356,6 +356,14 @@ CONST static char *ftpsslccc[] = {
 
 CONST static char *sslversion[] = {
     "default", "tlsv1", "sslv2", "sslv3", "tlsv1_0", "tlsv1_1", "tlsv1_2", "tlsv1_3",
+    "maxdefault", "maxtlsv1_0", "maxtlsv1_1", "maxtlsv1_2", "maxtlsv1_3", (char *)NULL
+};
+
+CONST static char *sslversionnomax[] = {
+    "default", "tlsv1", "sslv2", "sslv3", "tlsv1_0", "tlsv1_1", "tlsv1_2", "tlsv1_3", (char *)NULL
+};
+
+CONST static char *sslversionmax[] = {
     "maxdefault", "maxtlsv1_0", "maxtlsv1_1", "maxtlsv1_2", "maxtlsv1_3", (char *)NULL
 };
 
