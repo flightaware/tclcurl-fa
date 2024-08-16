@@ -11,6 +11,9 @@
  *
  */
 
+#ifndef tclcurl_h
+#define tclcurl_h
+
 #if (defined(WIN32) || defined(_WIN32))
 #define CURL_STATICLIB 1
 #endif
@@ -198,6 +201,7 @@ CONST static char *optionTable[] = {
     "CURLOPT_FNMATCH_PROC",   "CURLOPT_RESOLVE",        "CURLOPT_TLSAUTH_USERNAME",
     "CURLOPT_TLSAUTH_PASSWORD", "CURLOPT_TLSAUTH_TYPE", "CURLOPT_TRANSFER_ENCODING",
     "CURLOPT_GSSAPI_DELEGATION", "CURLOPT_NOPROXY",     "CURLOPT_TELNETOPTIONS",
+    "CURLOPT_CAINFO_BLOB",
     (char *)NULL
 };
 
@@ -239,11 +243,11 @@ CONST static char *configTable[] = {
     "-share",             "-port",               "-tcpnodelay",
     "-autoreferer",       "-sourcehost",         "-sourceuserpwd",
     "-sourcepath",        "-sourceport",         "-pasvhost",
-    "-sourceprequote",    "-sourcepostquote",    "-ftpsslauth",
-    "-sourceurl",         "-sourcequote",        "-ftpaccount",
-    "-ignorecontentlength",                      "-cookielist",
-    "-ftpskippasvip",     "-ftpfilemethod",      "-localport",
-    "-localportrange",
+    "-sourceprequote",    "-sourcepostquote",
+    "-ftpsslauth",        "-sourceurl",          "-sourcequote",
+    "-ftpaccount",        "-ignorecontentlength",
+    "-cookielist",        "-ftpskippasvip",
+    "-ftpfilemethod",     "-localport",          "-localportrange",
     "-maxsendspeed",                             "-maxrecvspeed",
     "-ftpalternativetouser",                     "-sslsessionidcache",
     "-sshauthtypes",      "-sshpublickeyfile",   "-sshprivatekeyfile",
@@ -263,6 +267,7 @@ CONST static char *configTable[] = {
     "-fnmatchproc",       "-resolve",            "-tlsauthusername",
     "-tlsauthpassword",   "-tlsauthtype",        "-transferencoding",
     "-gssapidelegation",  "-noproxy",            "-telnetoptions",
+    "-cainfoblob",
     (char *) NULL
 };
 
@@ -389,7 +394,7 @@ int Tclcurl_MultiInit (Tcl_Interp *interp);
 
 EXTERN int Tclcurl_Init(Tcl_Interp *interp);
 
-char *curlCreateObjCmd(Tcl_Interp *interp,struct curlObjData  *curlData);
+Tcl_Obj* curlCreateObjCmd(Tcl_Interp *interp,struct curlObjData  *curlData);
 int curlInitObjCmd(ClientData clientData, Tcl_Interp *interp, int objc,
         Tcl_Obj *CONST objv[]);
 int curlObjCmd(ClientData clientData, Tcl_Interp *interp, int objc,
@@ -420,6 +425,8 @@ int SetoptLong(Tcl_Interp *interp,CURL *curlHandle,CURLoption opt,int tableIndex
 int SetoptCurlOffT(Tcl_Interp *interp,CURL *curlHandle,CURLoption opt,int tableIndex,
             Tcl_Obj *tclObj);
 int SetoptChar(Tcl_Interp *interp,CURL *curlHandle,CURLoption opt,
+            int tableIndex,Tcl_Obj *tclObj);
+int SetoptBlob(Tcl_Interp *interp,CURL *curlHandle,CURLoption opt,
             int tableIndex,Tcl_Obj *tclObj);
 int SetoptSHandle(Tcl_Interp *interp,CURL *curlHandle,CURLoption opt,
         int tableIndex,Tcl_Obj *tclObj);
@@ -488,13 +495,14 @@ void curlSetBodyVarName(Tcl_Interp *interp,struct curlObjData *curlDataPtr);
 char *curlstrdup (char *old);
 
 
-char *curlCreateShareObjCmd (Tcl_Interp *interp,struct shcurlObjData  *shcurlData);
+Tcl_Obj* curlCreateShareObjCmd (Tcl_Interp *interp,struct shcurlObjData  *shcurlData);
 int curlShareInitObjCmd (ClientData clientData, Tcl_Interp *interp,
         int objc,Tcl_Obj *CONST objv[]);
 int curlShareObjCmd (ClientData clientData, Tcl_Interp *interp,
         int objc,Tcl_Obj *CONST objv[]);
 int curlCleanUpShareCmd(ClientData clientData);
 
+#ifndef multi_h
 #ifdef TCL_THREADS
     TCL_DECLARE_MUTEX(cookieLock)
     TCL_DECLARE_MUTEX(dnsLock)
@@ -504,6 +512,7 @@ int curlCleanUpShareCmd(ClientData clientData);
     void curlShareLockFunc (CURL *handle, curl_lock_data data
             , curl_lock_access access, void *userptr);
     void curlShareUnLockFunc(CURL *handle, curl_lock_data data, void *userptr);
+#endif
 #endif
 
 int curlErrorStrings (Tcl_Interp *interp, Tcl_Obj *CONST objv,int type);
@@ -516,4 +525,6 @@ int curlMultiStringError (ClientData clientData, Tcl_Interp *interp,
 
 #ifdef  __cplusplus
 }
+#endif
+
 #endif
