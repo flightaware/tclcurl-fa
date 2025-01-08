@@ -124,7 +124,7 @@ struct shcurlObjData {
 
 #ifndef multi_h
 
-CONST static char *commandTable[] = {
+const static char *commandTable[] = {
     "setopt",
     "perform",
     "getinfo",
@@ -137,7 +137,7 @@ CONST static char *commandTable[] = {
     (char *) NULL
 };
 
-CONST static char *optionTable[] = {
+const static char *optionTable[] = {
     "CURLOPT_URL",           "CURLOPT_FILE",            "CURLOPT_READDATA",
     "CURLOPT_USERAGENT",     "CURLOPT_REFERER",         "CURLOPT_VERBOSE",
     "CURLOPT_HEADER",        "CURLOPT_NOBODY",          "CURLOPT_PROXY",
@@ -205,7 +205,7 @@ CONST static char *optionTable[] = {
     (char *)NULL
 };
 
-CONST static char *configTable[] = {
+const static char *configTable[] = {
     "-url",               "-file",               "-infile",
     "-useragent",         "-referer",            "-verbose",
     "-header",            "-nobody",             "-proxy",
@@ -271,12 +271,12 @@ CONST static char *configTable[] = {
     (char *) NULL
 };
 
-CONST static char    *timeCond[] = {
+const static char    *timeCond[] = {
     "ifmodsince", "ifunmodsince",
     (char *)NULL
 };
 
-CONST static char    *getInfoTable[]={
+const static char    *getInfoTable[]={
     "effectiveurl",   "httpcode",       "responsecode",
     "filetime",       "totaltime",      "namelookuptime",
     "connecttime",    "pretransfertime","sizeupload",
@@ -293,12 +293,12 @@ CONST static char    *getInfoTable[]={
     (char *)NULL
 };
 
-CONST static char   *curlFormTable[]={
+const static char   *curlFormTable[]={
     "name",  "contents", "file", "contenttype", "contentheader", "filename",
     "bufferName", "buffer", "filecontent", (char *)NULL
 };
 
-CONST static char   *httpVersionTable[] = {
+const static char   *httpVersionTable[] = {
     "none",  /* CURL_HTTP_VERSION_NONE */
     "1.0",  /* CURL_HTTP_VERSION_1_0 */
     "1.1",  /* CURL_HTTP_VERSION_1_1 */
@@ -308,81 +308,81 @@ CONST static char   *httpVersionTable[] = {
     (char *)NULL
 };
 
-CONST static char *netrcTable[] = {
+const static char *netrcTable[] = {
     "optional", "ignored", "required", (char *)NULL
 };
 
-CONST static char *encodingTable[] = {
+const static char *encodingTable[] = {
     "identity", "deflated", "all", (char *)NULL
 };
 
-CONST static char *versionInfoTable[] = {
+const static char *versionInfoTable[] = {
     "-version",    "-versionnum",    "-host",         "-features",
     "-sslversion", "-sslversionnum", "-libzversion",
     "-protocols",  (char *)NULL
 };
 
-CONST static char *proxyTypeTable[] = {
+const static char *proxyTypeTable[] = {
     "http", "http1.0", "socks4", "socks4a", "socks5", "socks5h", (char *)NULL
 };
 
-CONST static char *httpAuthMethods[] = {
+const static char *httpAuthMethods[] = {
     "basic", "digest", "digestie", "gssnegotiate", "ntlm", "any", "anysafe", "ntlmwb",(char *)NULL
 };
 
-CONST static char *ipresolve[] = {
+const static char *ipresolve[] = {
     "whatever", "v4", "v6", (char *)NULL
 };
 
-CONST static char *ftpssl[] = {
+const static char *ftpssl[] = {
     "nope", "try", "control", "all", (char *)NULL
 };
 
-CONST static char *shareCmd[] = {
+const static char *shareCmd[] = {
     "share", "unshare", "cleanup", (char *)NULL
 };
 
-CONST static char *lockData[] = {
+const static char *lockData[] = {
     "cookies", "dns", (char *)NULL
 };
 
-CONST static char *ftpsslauth[] = {
+const static char *ftpsslauth[] = {
     "default", "ssl", "tls", (char *)NULL
 };
 
-CONST static char *ftpsslccc[] = {
+const static char *ftpsslccc[] = {
     "none", "passive", "active", (char *)NULL
 };
 
-CONST static char *sslversion[] = {
+const static char *sslversion[] = {
     "default", "tlsv1", "sslv2", "sslv3", "tlsv1_0", "tlsv1_1", "tlsv1_2", "tlsv1_3",
     "maxdefault", "maxtlsv1_0", "maxtlsv1_1", "maxtlsv1_2", "maxtlsv1_3", (char *)NULL
 };
 
-CONST static char *ftpfilemethod[] = {
+const static char *ftpfilemethod[] = {
     "default", "multicwd", "nocwd", "singlecwd", (char *)NULL
 };
 
-CONST static char *sshauthtypes[] = {
+const static char *sshauthtypes[] = {
     "publickey", "password", "host", "keyboard", "any", (char *)NULL
 };
 
-CONST static char *postredir[] = {
+const static char *postredir[] = {
     "301", "302", "all", (char *)NULL
 };
 
-CONST static char *protocolNames[] = {
+const static char *protocolNames[] = {
     "http", "https", "ftp", "ftps", "scp", "sftp", "telnet", "ldap",
     "ldaps","dict",  "file","tftp", "all", "imap", "imaps", "pop3",
     "pop3s", "smtp", "smtps", "rtsp", "rtmp", "rtmpt", "rtmpe", 
     "rtmpte", "rtmps", "rtmpts", "gopher", (char*)NULL
 };
 
-CONST static char *tlsauth[] = {
+const static char *tlsauth[] = {
     "none", "srp", (char *)NULL
 };
 
-CONST static char *gssapidelegation[] = {
+const static char *gssapidelegation[] = {
     "flag", "policyflag", (char *) NULL
 };
 
@@ -396,27 +396,27 @@ EXTERN int Tclcurl_Init(Tcl_Interp *interp);
 
 Tcl_Obj* curlCreateObjCmd(Tcl_Interp *interp,struct curlObjData  *curlData);
 int curlInitObjCmd(ClientData clientData, Tcl_Interp *interp, int objc,
-        Tcl_Obj *CONST objv[]);
+        Tcl_Obj *const objv[]);
 int curlObjCmd(ClientData clientData, Tcl_Interp *interp, int objc,
-        Tcl_Obj *CONST objv[]);
+        Tcl_Obj *const objv[]);
 int curlDeleteCmd(ClientData clientData);
 
 int curlPerform(Tcl_Interp *interp,CURL *curlHandle,struct curlObjData *curlData);
 
 int curlSetOptsTransfer(Tcl_Interp *interp, struct curlObjData *curlData,int objc,
-        Tcl_Obj *CONST objv[]);
+        Tcl_Obj *const objv[]);
 
 int curlConfigTransfer(Tcl_Interp *interp, struct curlObjData *curlData,int objc,
-        Tcl_Obj *CONST objv[]);
+        Tcl_Obj *const objv[]);
 
 
 int curlDupHandle(Tcl_Interp *interp, struct curlObjData *curlData,int objc,
-        Tcl_Obj *CONST objv[]);
+        Tcl_Obj *const objv[]);
 
 int curlResetHandle(Tcl_Interp *interp, struct curlObjData *curlData);
 
 int curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
-        Tcl_Obj *CONST objv,int tableIndex);
+        Tcl_Obj *const objv,int tableIndex);
 
 int SetoptInt(Tcl_Interp *interp,CURL *curlHandle,CURLoption opt,int tableIndex,
             Tcl_Obj *tclObj);
@@ -430,13 +430,13 @@ int SetoptBlob(Tcl_Interp *interp,CURL *curlHandle,CURLoption opt,
             int tableIndex,Tcl_Obj *tclObj);
 int SetoptSHandle(Tcl_Interp *interp,CURL *curlHandle,CURLoption opt,
         int tableIndex,Tcl_Obj *tclObj);
-int SetoptsList(Tcl_Interp *interp,struct curl_slist **slistPtr,Tcl_Obj *CONST objv);
+int SetoptsList(Tcl_Interp *interp,struct curl_slist **slistPtr,Tcl_Obj *const objv);
 
 CURLcode curlGetInfo(Tcl_Interp *interp,CURL *curlHandle,int tableIndex);
 
 void curlFreeSpace(struct curlObjData *curlData);
 
-void curlErrorSetOpt(Tcl_Interp *interp,CONST char **configTable, int option,CONST char *parPtr);
+void curlErrorSetOpt(Tcl_Interp *interp,const char **configTable, int option,const char *parPtr);
 
 size_t curlHeaderReader(void *ptr,size_t size,size_t nmemb,FILE *stream);
 
@@ -467,16 +467,16 @@ int curlDebugProcInvoke(CURL *curlHandle, curl_infotype infoType,
         char * dataPtr, size_t size, void  *curlData);
 
 int curlVersion (ClientData clientData, Tcl_Interp *interp,
-    int objc,Tcl_Obj *CONST objv[]);
+    int objc,Tcl_Obj *const objv[]);
 
 int curlEscape(ClientData clientData, Tcl_Interp *interp,
-    int objc,Tcl_Obj *CONST objv[]);
+    int objc,Tcl_Obj *const objv[]);
 
 int curlUnescape(ClientData clientData, Tcl_Interp *interp,
-    int objc,Tcl_Obj *CONST objv[]);
+    int objc,Tcl_Obj *const objv[]);
 
 int curlVersionInfo (ClientData clientData, Tcl_Interp *interp,
-    int objc,Tcl_Obj *CONST objv[]);
+    int objc,Tcl_Obj *const objv[]);
 
 int curlCopyCurlData (struct curlObjData *curlDataOld,
                       struct curlObjData *curlDataNew);
@@ -497,9 +497,9 @@ char *curlstrdup (char *old);
 
 Tcl_Obj* curlCreateShareObjCmd (Tcl_Interp *interp,struct shcurlObjData  *shcurlData);
 int curlShareInitObjCmd (ClientData clientData, Tcl_Interp *interp,
-        int objc,Tcl_Obj *CONST objv[]);
+        int objc,Tcl_Obj *const objv[]);
 int curlShareObjCmd (ClientData clientData, Tcl_Interp *interp,
-        int objc,Tcl_Obj *CONST objv[]);
+        int objc,Tcl_Obj *const objv[]);
 int curlCleanUpShareCmd(ClientData clientData);
 
 #ifndef multi_h
@@ -515,13 +515,13 @@ int curlCleanUpShareCmd(ClientData clientData);
 #endif
 #endif
 
-int curlErrorStrings (Tcl_Interp *interp, Tcl_Obj *CONST objv,int type);
+int curlErrorStrings (Tcl_Interp *interp, Tcl_Obj *const objv,int type);
 int curlEasyStringError (ClientData clientData, Tcl_Interp *interp,
-        int objc,Tcl_Obj *CONST objv[]);
+        int objc,Tcl_Obj *const objv[]);
 int curlShareStringError (ClientData clientData, Tcl_Interp *interp,
-        int objc,Tcl_Obj *CONST objv[]);
+        int objc,Tcl_Obj *const objv[]);
 int curlMultiStringError (ClientData clientData, Tcl_Interp *interp,
-        int objc,Tcl_Obj *CONST objv[]);
+        int objc,Tcl_Obj *const objv[]);
 
 #ifdef  __cplusplus
 }
