@@ -2259,7 +2259,7 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
             return TCL_OK;
             break;
         case 175:
-#if LIBCURL_VERSION_NUM >= MAKE_LIBCURL_VERSION(7, 77, 0)
+#if CURL_AT_LEAST_VERSION(7, 77, 0)
             if (SetoptBlob(interp,curlHandle,CURLOPT_CAINFO_BLOB,
                     tableIndex,objv)) {
                 return TCL_ERROR;
