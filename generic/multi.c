@@ -167,12 +167,12 @@ curlMultiObjCmd (ClientData clientData, Tcl_Interp *interp,
     switch(tableIndex) {
         case 0:
 /*            fprintf(stdout,"Multi add handle\n"); */
-            errorCode=curlAddMultiHandle(interp,curlMultiData->mcurl,objv[2]);
+            errorCode=curlAddMultiHandle(interp,curlMultiData,objv[2]);
             return curlReturnCURLMcode(interp,errorCode);
             break;
         case 1:
 /*            fprintf(stdout,"Multi remove handle\n"); */
-            errorCode=curlRemoveMultiHandle(interp,curlMultiData->mcurl,objv[2]);
+            errorCode=curlRemoveMultiHandle(interp,curlMultiData,objv[2]);
             return curlReturnCURLMcode(interp,errorCode);
             break;
         case 2:
@@ -186,7 +186,7 @@ curlMultiObjCmd (ClientData clientData, Tcl_Interp *interp,
             break;
         case 4:
 /*            fprintf(stdout,"Multi getInfo\n"); */
-            curlMultiGetInfo(interp,curlMultiData->mcurl);
+            curlMultiGetInfo(interp,curlMultiData);
             break;
         case 5:
 /*            fprintf(stdout,"Multi activeTransfers\n"); */
@@ -222,7 +222,7 @@ curlMultiObjCmd (ClientData clientData, Tcl_Interp *interp,
  *----------------------------------------------------------------------
  */
 CURLMcode
-curlAddMultiHandle(Tcl_Interp *interp,CURLM *curlMultiHandlePtr
+curlAddMultiHandle(Tcl_Interp *interp,struct curlMultiObjData *multiDataPtr
         ,Tcl_Obj *objvPtr) {
 
     struct curlObjData        *curlDataPtr;
@@ -238,9 +238,9 @@ curlAddMultiHandle(Tcl_Interp *interp,CURLM *curlMultiHandlePtr
         return TCL_ERROR;
     }
 
-    errorCode=curl_multi_add_handle(curlMultiHandlePtr,curlDataPtr->curl);
+    errorCode=curl_multi_add_handle(multiDataPtr->mcurl,curlDataPtr->curl);
 
-    curlEasyHandleListAdd(curlMultiHandlePtr,curlDataPtr->curl
+    curlEasyHandleListAdd(multiDataPtr,curlDataPtr->curl
             ,Tcl_GetString(objvPtr));
 
     return errorCode;
@@ -264,14 +264,14 @@ curlAddMultiHandle(Tcl_Interp *interp,CURLM *curlMultiHandlePtr
  *----------------------------------------------------------------------
  */
 CURLMcode
-curlRemoveMultiHandle(Tcl_Interp *interp,CURLM *curlMultiHandle
+curlRemoveMultiHandle(Tcl_Interp *interp,struct curlMultiObjData *multiDataPtr
         ,Tcl_Obj *objvPtr) {
     struct curlObjData        *curlDataPtr;
     CURLMcode                  errorCode;
 
     curlDataPtr=curlGetEasyHandle(interp,objvPtr);
-    errorCode=curl_multi_remove_handle(curlMultiHandle,curlDataPtr->curl);
-    curlEasyHandleListRemove(curlMultiHandle,curlDataPtr->curl);
+    errorCode=curl_multi_remove_handle(multiDataPtr->mcurl,curlDataPtr->curl);
+    curlEasyHandleListRemove(multiDataPtr,curlDataPtr->curl);
 
     curlCloseFiles(curlDataPtr);
     curlResetPostData(curlDataPtr);
@@ -374,12 +374,12 @@ curlMultiDeleteCmd(ClientData clientData) {
  *----------------------------------------------------------------------
  */
 int
-curlMultiGetInfo(Tcl_Interp *interp,CURLM *curlMultiHandlePtr) {
+curlMultiGetInfo(Tcl_Interp *interp,struct curlMultiObjData *multiDataPtr) {
     struct CURLMsg        *multiInfo;
     int                    msgLeft;
     Tcl_Obj               *resultPtr;
 
-    multiInfo=curl_multi_info_read(curlMultiHandlePtr, &msgLeft);
+    multiInfo=curl_multi_info_read(multiDataPtr->mcurl, &msgLeft);
     resultPtr=Tcl_NewListObj(0,(Tcl_Obj **)NULL); 
     if (multiInfo==NULL) {
         Tcl_ListObjAppendElement(interp,resultPtr,Tcl_NewStringObj("",-1));
@@ -388,7 +388,7 @@ curlMultiGetInfo(Tcl_Interp *interp,CURLM *curlMultiHandlePtr) {
         Tcl_ListObjAppendElement(interp,resultPtr,Tcl_NewIntObj(0));
     } else {
         Tcl_ListObjAppendElement(interp,resultPtr,
-            Tcl_NewStringObj(curlGetEasyName(curlMultiHandlePtr,multiInfo->easy_handle),-1));
+            Tcl_NewStringObj(curlGetEasyName(multiDataPtr,multiInfo->easy_handle),-1));
         Tcl_ListObjAppendElement(interp,resultPtr,Tcl_NewIntObj(multiInfo->msg));
         Tcl_ListObjAppendElement(interp,resultPtr,Tcl_NewIntObj(multiInfo->data.result));
         Tcl_ListObjAppendElement(interp,resultPtr,Tcl_NewIntObj(msgLeft));
