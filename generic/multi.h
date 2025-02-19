@@ -44,7 +44,7 @@ struct curlEvent {
     struct curlMultiObjData *curlMultiData;
 };
 
-CONST static char *multiCommandTable[] = {
+const static char *multiCommandTable[] = {
     "addhandle",
     "removehandle",
     "perform",
@@ -56,7 +56,7 @@ CONST static char *multiCommandTable[] = {
     (char *) NULL
 };
 
-CONST static char *multiConfigTable[] = {
+const static char *multiConfigTable[] = {
     "-pipelining", "-maxconnects",
     (char *)NULL
 };
@@ -68,10 +68,10 @@ int Tclcurl_MultiInit (Tcl_Interp *interp);
 int curlMultiDeleteCmd(ClientData clientData);
 
 int curlInitMultiObjCmd (ClientData clientData, Tcl_Interp *interp,
-        int objc,Tcl_Obj *CONST objv[]);
+        int objc,Tcl_Obj *const objv[]);
 
 int curlMultiObjCmd (ClientData clientData, Tcl_Interp *interp,
-    int objc,Tcl_Obj *CONST objv[]);
+    int objc,Tcl_Obj *const objv[]);
 
 CURLMcode curlAddMultiHandle(Tcl_Interp *interp,CURLM *curlMultiHandle
         ,Tcl_Obj *objvPtr);
@@ -96,12 +96,12 @@ void curlEasyHandleListAdd(struct curlMultiObjData *multiDataPtr,CURL *easyHandl
 void curlEasyHandleListRemove(struct curlMultiObjData *multiDataPtr,CURL *easyHandle);
 char *curlGetEasyName(struct curlMultiObjData *multiDataPtr,CURL *easyHandle);
 
-int curlMultiAutoTransfer(Tcl_Interp *interp, struct curlMultiObjData *curlMultiData, int objc,Tcl_Obj *CONST objv[]);
-int curlMultiSetOpts(Tcl_Interp *interp, struct curlMultiObjData *curlMultiData,Tcl_Obj *CONST objv,int tableIndex);
+int curlMultiAutoTransfer(Tcl_Interp *interp, struct curlMultiObjData *curlMultiData, int objc,Tcl_Obj *const objv[]);
+int curlMultiSetOpts(Tcl_Interp *interp, struct curlMultiObjData *curlMultiData,Tcl_Obj *const objv,int tableIndex);
 int SetMultiOptLong(Tcl_Interp *interp,CURLM *curlMultiHandle,CURLMoption opt,
         int tableIndex,Tcl_Obj *tclObj);
 
-int curlMultiConfigTransfer(Tcl_Interp *interp, struct curlMultiObjData *curlMultiData, int objc,Tcl_Obj *CONST objv[]);
+int curlMultiConfigTransfer(Tcl_Interp *interp, struct curlMultiObjData *curlMultiData, int objc,Tcl_Obj *const objv[]);
 
 void curlEventSetup(ClientData clientData, int flags);
 
