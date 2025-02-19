@@ -419,7 +419,7 @@ curlSetOptsTransfer(Tcl_Interp *interp, struct curlObjData *curlData,
  */
 int
 curlConfigTransfer(Tcl_Interp *interp, struct curlObjData *curlData,
-        int objc, Tcl_Obj *CONST objv[]) {
+        int objc, Tcl_Obj *const objv[]) {
 
     int              tableIndex;
     int              i,j;
@@ -461,7 +461,7 @@ curlConfigTransfer(Tcl_Interp *interp, struct curlObjData *curlData,
  */
 int
 curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
-        Tcl_Obj *CONST objv,int tableIndex) {
+        Tcl_Obj *const objv,int tableIndex) {
 
     int            exitCode;
     CURL           *curlHandle=curlData->curl;
@@ -471,8 +471,8 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
     Tcl_Obj        *tmpObjPtr;
 
     Tcl_RegExp      regExp;
-    CONST char     *startPtr;
-    CONST char     *endPtr;
+    const char     *startPtr;
+    const char     *endPtr;
 
     int             charLength;
     long            longNumber=0;
@@ -2259,11 +2259,15 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
             return TCL_OK;
             break;
         case 175:
+#if CURL_AT_LEAST_VERSION(7, 77, 0)
             if (SetoptBlob(interp,curlHandle,CURLOPT_CAINFO_BLOB,
                     tableIndex,objv)) {
                 return TCL_ERROR;
             }
             break;
+#else
+            return TCL_ERROR;
+#endif
     }
     return TCL_OK;
 }
@@ -2507,7 +2511,7 @@ SetoptSHandle(Tcl_Interp *interp,CURL *curlHandle,
  */
 int
 SetoptsList(Tcl_Interp *interp,struct curl_slist **slistPtr,
-        Tcl_Obj *CONST objv) {
+        Tcl_Obj *const objv) {
     int         i,headerNumber;
     Tcl_Obj     **headers;
 
@@ -2547,8 +2551,8 @@ SetoptsList(Tcl_Interp *interp,struct curl_slist **slistPtr,
  */
 
 void
-curlErrorSetOpt(Tcl_Interp *interp,CONST char **configTable, int option,
-        CONST char *parPtr) {
+curlErrorSetOpt(Tcl_Interp *interp,const char **configTable, int option,
+        const char *parPtr) {
     Tcl_Obj     *resultPtr;
 
     resultPtr=Tcl_ObjPrintf("setting option %s: %s",configTable[option],parPtr);
@@ -3737,7 +3741,7 @@ curlResetHandle(Tcl_Interp *interp, struct curlObjData *curlData)  {
  */
 int
 curlVersion (ClientData clientData, Tcl_Interp *interp,
-    int objc,Tcl_Obj *CONST objv[]) {
+    int objc,Tcl_Obj *const objv[]) {
 
     Tcl_Obj     *versionPtr;
 
@@ -4406,7 +4410,7 @@ curlCreateShareObjCmd (Tcl_Interp *interp,struct shcurlObjData  *shcurlData) {
 
 int
 curlShareInitObjCmd (ClientData clientData, Tcl_Interp *interp,
-        int objc,Tcl_Obj *CONST objv[]) {
+        int objc,Tcl_Obj *const objv[]) {
 
     Tcl_Obj               *resultPtr;
     CURL                  *shcurlHandle;

@@ -98,7 +98,7 @@ curlCreateMultiObjCmd (Tcl_Interp *interp,struct curlMultiObjData *curlMultiData
 
 int
 curlInitMultiObjCmd (ClientData clientData, Tcl_Interp *interp,
-        int objc,Tcl_Obj *CONST objv[]) {
+        int objc,Tcl_Obj *const objv[]) {
 
 
     Tcl_Obj                     *result;
@@ -150,7 +150,7 @@ curlInitMultiObjCmd (ClientData clientData, Tcl_Interp *interp,
  */
 int
 curlMultiObjCmd (ClientData clientData, Tcl_Interp *interp,
-    int objc,Tcl_Obj *CONST objv[]) {
+    int objc,Tcl_Obj *const objv[]) {
 
     struct curlMultiObjData    *curlMultiData=(struct curlMultiObjData *)clientData;
     CURLMcode                   errorCode;
@@ -674,7 +674,7 @@ curlReturnCURLMcode (Tcl_Interp *interp,CURLMcode errorCode) {
 
 int
 curlMultiAutoTransfer(Tcl_Interp *interp, struct curlMultiObjData *curlMultiData,
-        int objc,Tcl_Obj *CONST objv[]) {
+        int objc,Tcl_Obj *const objv[]) {
 
     if (objc==4) {
         Tcl_Free(curlMultiData->postCommand);
@@ -710,7 +710,7 @@ curlMultiAutoTransfer(Tcl_Interp *interp, struct curlMultiObjData *curlMultiData
 
 int
 curlMultiConfigTransfer(Tcl_Interp *interp, struct curlMultiObjData *curlMultiData,
-        int objc,Tcl_Obj *CONST objv[]) {
+        int objc,Tcl_Obj *const objv[]) {
     int            tableIndex;
     int            i,j;
 
@@ -754,7 +754,7 @@ curlMultiConfigTransfer(Tcl_Interp *interp, struct curlMultiObjData *curlMultiDa
  */
 int
 curlMultiSetOpts(Tcl_Interp *interp, struct curlMultiObjData *curlMultiData,
-        Tcl_Obj *CONST objv,int tableIndex) {
+        Tcl_Obj *const objv,int tableIndex) {
 
     switch(tableIndex) {
         case 0:
