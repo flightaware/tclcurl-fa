@@ -73,15 +73,15 @@ int curlInitMultiObjCmd (ClientData clientData, Tcl_Interp *interp,
 int curlMultiObjCmd (ClientData clientData, Tcl_Interp *interp,
     int objc,Tcl_Obj *const objv[]);
 
-CURLMcode curlAddMultiHandle(Tcl_Interp *interp,CURLM *curlMultiHandle
+CURLMcode curlAddMultiHandle(Tcl_Interp *interp,struct curlMultiObjData *multiDataPtr
         ,Tcl_Obj *objvPtr);
 
-CURLMcode curlRemoveMultiHandle(Tcl_Interp *interp,CURLM *curlMultiHandle
+CURLMcode curlRemoveMultiHandle(Tcl_Interp *interp,struct curlMultiObjData *multiDataPtr
         ,Tcl_Obj *objvPtr);
 
 int curlMultiPerform(Tcl_Interp *interp,CURLM *curlMultiHandle);
 
-int curlMultiGetInfo(Tcl_Interp *interp,CURLM *curlMultiHandlePtr);
+int curlMultiGetInfo(Tcl_Interp *interp,struct curlMultiObjData *multiDataPtr);
 
 int curlMultiGetActiveTransfers( struct curlMultiObjData *curlMultiData);
 int curlMultiActiveTransfers(Tcl_Interp *interp, struct curlMultiObjData *curlMultiData);
