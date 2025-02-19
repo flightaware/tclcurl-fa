@@ -30,7 +30,7 @@ test 1.05 {: Test that -sslversionnum returns something} -body {
 
 test 1.06 {: Test that -libzversion returns something} -body {
 	return [curl::versioninfo -libzversion]
-} -match regexp -result {^\d+\.\d+\.\d+$}
+} -match regexp -result {^\d+\.\d+(\.\d+)?$}
 
 test 1.07 {: Test that -protocols returns something} -body {
 	return [curl::versioninfo -protocols]
