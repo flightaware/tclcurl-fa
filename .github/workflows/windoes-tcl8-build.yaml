@@ -1,4 +1,4 @@
-name: Windows CI
+name: Windows tcl8 build-install-test
 
 on:
   push:
