@@ -478,7 +478,6 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
     int             charLength;
     long            longNumber=0;
     int             intNumber;
-    char           *tmpStr;
     unsigned char  *tmpUStr;
 
     Tcl_Obj                 **httpPostData;
@@ -678,7 +677,9 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
                 return TCL_ERROR;
             }
             break;
-        case 28:
+        case 28: {
+            char *tmpStr;
+
             tmpStr=curlstrdup(Tcl_GetString(objv));
             regExp=Tcl_RegExpCompile(interp,"(.*)(?:\\()(.*)(?:\\))");
             exitCode=Tcl_RegExpExec(interp,regExp,tmpStr,tmpStr);
@@ -721,6 +722,7 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
                 Tcl_Free(curlData->errorBuffer);
             }
             break;
+        }
         case 29:
             if (SetoptLong(interp,curlHandle,CURLOPT_HTTPGET,tableIndex,
                         objv)) {
@@ -772,7 +774,8 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
             }
             return TCL_OK;
             break;
-        case 37:
+        case 37: {
+            char *tmpStr = NULL;
             if (Tcl_ListObjGetElements(interp,objv,&nForms,&httpPostData)
                     ==TCL_ERROR) {
                 return TCL_ERROR;
@@ -879,11 +882,12 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
                 Tcl_Free((char *)newFormArray);
                 resultObjPtr=Tcl_ObjPrintf("%d",formaddError);
                 Tcl_SetObjResult(interp,resultObjPtr);
-                Tcl_Free(tmpStr);
+                if(tmpSTr) Tcl_Free(tmpStr);
                 return TCL_ERROR;
             }
             return TCL_OK;
             break;
+        }
         case 38:
             if (SetoptChar(interp,curlHandle,CURLOPT_SSLCERT,tableIndex,objv)) {
                 return TCL_ERROR;
@@ -1240,7 +1244,7 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
             }
             if (curl_easy_setopt(curlHandle,CURLOPT_HTTP_VERSION,
                         tableIndex)) {
-                tmpStr=curlstrdup(Tcl_GetString(objv));
+                char *tmpStr=curlstrdup(Tcl_GetString(objv));
                 curlErrorSetOpt(interp,configTable,70,tmpStr);
                 Tcl_Free(tmpStr);
                 return TCL_ERROR;
@@ -1946,9 +1950,10 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
             }
 
             for (i=0,protocolMask=0;i<nProtocols;i++) {
-                tmpStr=curlstrdup(Tcl_GetString(protocols[i]));
+                char *tmpStr=curlstrdup(Tcl_GetString(protocols[i]));
                 if (Tcl_GetIndexFromObj(interp,protocols[i],protocolNames,
                        "protocol",TCL_EXACT,&curlTableIndex)==TCL_ERROR) {
+                   tclFree(tmpStr);
                    return TCL_ERROR;
                 }
                 switch(curlTableIndex) {
@@ -2047,6 +2052,7 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
             }
             Tcl_DecrRefCount(tmpObjPtr);
             break;
+        }
         case 156:
             if (Tcl_GetIndexFromObj(interp, objv, ftpsslccc,
                 "Clear Command Channel option ",TCL_EXACT,&intNumber)==TCL_ERROR) {
