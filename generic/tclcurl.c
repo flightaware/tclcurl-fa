@@ -2438,7 +2438,7 @@ int
 SetoptBlob(Tcl_Interp *interp,CURL *curlHandle,
         CURLoption opt,int tableIndex,Tcl_Obj *tclObj) {
     struct curl_blob   optionBlob;
-    int                len;
+    Tcl_Size           len;
 
     optionBlob.data = Tcl_GetByteArrayFromObj(tclObj,&len);
     if (optionBlob.data) {
@@ -2821,7 +2821,7 @@ curlReadProcInvoke(void *ptr,size_t size,size_t nmemb,FILE *curlDataPtr) {
     Tcl_Obj             *tclProcPtr;
     Tcl_Obj             *readDataPtr;
     unsigned char       *readBytes;
-    int                  sizeRead;
+    Tcl_Size             sizeRead;
 
     if (curlData->cancelTransVarName) {
         if (curlData->cancelTrans) {
