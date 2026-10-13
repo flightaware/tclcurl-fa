@@ -25,7 +25,7 @@
 #include <stdio.h>
 #include <string.h>
 
-*
+/*
  * Tcl_Size was introduced in Tcl 9.  tclcurl still supports building against
  * Tcl 8.6, where Tcl object and list sizes are int-sized.
  */
