@@ -882,7 +882,7 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
                 Tcl_Free((char *)newFormArray);
                 resultObjPtr=Tcl_ObjPrintf("%d",formaddError);
                 Tcl_SetObjResult(interp,resultObjPtr);
-                if(tmpSTr) Tcl_Free(tmpStr);
+                if(tmpStr) Tcl_Free(tmpStr);
                 return TCL_ERROR;
             }
             return TCL_OK;
@@ -1953,7 +1953,7 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
                 char *tmpStr=curlstrdup(Tcl_GetString(protocols[i]));
                 if (Tcl_GetIndexFromObj(interp,protocols[i],protocolNames,
                        "protocol",TCL_EXACT,&curlTableIndex)==TCL_ERROR) {
-                   tclFree(tmpStr);
+                   Tcl_Free(tmpStr);
                    return TCL_ERROR;
                 }
                 switch(curlTableIndex) {
@@ -2052,7 +2052,6 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
             }
             Tcl_DecrRefCount(tmpObjPtr);
             break;
-        }
         case 156:
             if (Tcl_GetIndexFromObj(interp, objv, ftpsslccc,
                 "Clear Command Channel option ",TCL_EXACT,&intNumber)==TCL_ERROR) {
