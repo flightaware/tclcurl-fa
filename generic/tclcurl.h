@@ -25,6 +25,19 @@
 #include <stdio.h>
 #include <string.h>
 
+/*
+ * Tcl_Size was introduced in Tcl 9.  tclcurl still supports building against
+ * Tcl 8.6, where Tcl object and list sizes are int-sized.
+ */
+#ifndef TCL_SIZE_MAX
+# define Tcl_GetSizeIntFromObj Tcl_GetIntFromObj
+# define TCL_SIZE_MAX      INT_MAX
+# ifndef Tcl_Size
+    typedef int Tcl_Size;
+# endif
+# define TCL_SIZE_MODIFIER ""
+#endif
+
 #define _MPRINTF_REPLACE
 #include <curl/mprintf.h>
 
@@ -44,7 +57,7 @@ extern "C" {
 #define TCL_STORAGE_CLASS DLLEXPORT
 #endif
 
-#define TclCurlVersion "7.22.0"
+#define TclCurlVersion "7.23.0"
 
 /*
  * This struct will contain the data of a transfer if the user wants

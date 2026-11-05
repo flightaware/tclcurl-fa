@@ -465,7 +465,8 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
 
     int            exitCode;
     CURL           *curlHandle=curlData->curl;
-    int            i,j,k;
+    int            i,j;
+    Tcl_Size       nForms,nProtocols;
 
     Tcl_Obj        *resultObjPtr;
     Tcl_Obj        *tmpObjPtr;
@@ -477,7 +478,6 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
     int             charLength;
     long            longNumber=0;
     int             intNumber;
-    char           *tmpStr;
     unsigned char  *tmpUStr;
 
     Tcl_Obj                 **httpPostData;
@@ -485,7 +485,7 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
     int                       curlTableIndex,formaddError,formArrayIndex;
     struct formArrayStruct   *newFormArray;
     struct curl_forms        *formArray;
-    int                       curlformBufferSize;
+    Tcl_Size                  curlformBufferSize;
     size_t                    contentslen;
 
     unsigned long int         protocolMask;
@@ -677,7 +677,9 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
                 return TCL_ERROR;
             }
             break;
-        case 28:
+        case 28: {
+            char *tmpStr;
+
             tmpStr=curlstrdup(Tcl_GetString(objv));
             regExp=Tcl_RegExpCompile(interp,"(.*)(?:\\()(.*)(?:\\))");
             exitCode=Tcl_RegExpExec(interp,regExp,tmpStr,tmpStr);
@@ -720,6 +722,7 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
                 Tcl_Free(curlData->errorBuffer);
             }
             break;
+        }
         case 29:
             if (SetoptLong(interp,curlHandle,CURLOPT_HTTPGET,tableIndex,
                         objv)) {
@@ -771,21 +774,22 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
             }
             return TCL_OK;
             break;
-        case 37:
-            if (Tcl_ListObjGetElements(interp,objv,&k,&httpPostData)
+        case 37: {
+            char *tmpStr = NULL;
+            if (Tcl_ListObjGetElements(interp,objv,&nForms,&httpPostData)
                     ==TCL_ERROR) {
                 return TCL_ERROR;
             }
             formaddError=0;
             newFormArray=(struct formArrayStruct *)Tcl_Alloc(sizeof(struct formArrayStruct));
-            formArray=(struct curl_forms *)Tcl_Alloc(k*(sizeof(struct curl_forms)));
+            formArray=(struct curl_forms *)Tcl_Alloc(nForms*(sizeof(struct curl_forms)));
             formArrayIndex=0;
 
             newFormArray->next=curlData->formArray;
             newFormArray->formArray=formArray;
             newFormArray->formHeaderList=NULL;
 
-            for(i=0,j=0;i<k;i+=2,j+=1) {
+            for(i=0,j=0;i<nForms;i+=2,j+=1) {
                 if (Tcl_GetIndexFromObj(interp,httpPostData[i],curlFormTable,
                         "CURLFORM option",TCL_EXACT,&curlTableIndex)==TCL_ERROR) {
                     formaddError=1;
@@ -878,11 +882,12 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
                 Tcl_Free((char *)newFormArray);
                 resultObjPtr=Tcl_ObjPrintf("%d",formaddError);
                 Tcl_SetObjResult(interp,resultObjPtr);
-                Tcl_Free(tmpStr);
+                if(tmpStr) Tcl_Free(tmpStr);
                 return TCL_ERROR;
             }
             return TCL_OK;
             break;
+        }
         case 38:
             if (SetoptChar(interp,curlHandle,CURLOPT_SSLCERT,tableIndex,objv)) {
                 return TCL_ERROR;
@@ -1239,7 +1244,7 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
             }
             if (curl_easy_setopt(curlHandle,CURLOPT_HTTP_VERSION,
                         tableIndex)) {
-                tmpStr=curlstrdup(Tcl_GetString(objv));
+                char *tmpStr=curlstrdup(Tcl_GetString(objv));
                 curlErrorSetOpt(interp,configTable,70,tmpStr);
                 Tcl_Free(tmpStr);
                 return TCL_ERROR;
@@ -1940,14 +1945,15 @@ curlSetOpts(Tcl_Interp *interp, struct curlObjData *curlData,
             break;
         case 154:
         case 155:
-            if (Tcl_ListObjGetElements(interp,objv,&j,&protocols)==TCL_ERROR) {
+            if (Tcl_ListObjGetElements(interp,objv,&nProtocols,&protocols)==TCL_ERROR) {
                 return 1;
             }
 
-            for (i=0,protocolMask=0;i<j;i++) {
-                tmpStr=curlstrdup(Tcl_GetString(protocols[i]));
+            for (i=0,protocolMask=0;i<nProtocols;i++) {
+                char *tmpStr=curlstrdup(Tcl_GetString(protocols[i]));
                 if (Tcl_GetIndexFromObj(interp,protocols[i],protocolNames,
                        "protocol",TCL_EXACT,&curlTableIndex)==TCL_ERROR) {
+                   Tcl_Free(tmpStr);
                    return TCL_ERROR;
                 }
                 switch(curlTableIndex) {
@@ -2437,7 +2443,7 @@ int
 SetoptBlob(Tcl_Interp *interp,CURL *curlHandle,
         CURLoption opt,int tableIndex,Tcl_Obj *tclObj) {
     struct curl_blob   optionBlob;
-    int                len;
+    Tcl_Size           len;
 
     optionBlob.data = Tcl_GetByteArrayFromObj(tclObj,&len);
     if (optionBlob.data) {
@@ -2512,7 +2518,8 @@ SetoptSHandle(Tcl_Interp *interp,CURL *curlHandle,
 int
 SetoptsList(Tcl_Interp *interp,struct curl_slist **slistPtr,
         Tcl_Obj *const objv) {
-    int         i,headerNumber;
+    int         i;
+    Tcl_Size    headerNumber;
     Tcl_Obj     **headers;
 
     if (slistPtr!=NULL) {
@@ -2755,8 +2762,8 @@ curlWriteProcInvoke(void *ptr,size_t size,size_t nmemb,FILE *curlDataPtr) {
     register int        curl_retcode;
     int                 code;
     int                 cmd_list_size;
-    const char        **argvPtr;
-    int                 argcPtr;
+    const char        **argv;
+    Tcl_Size            argc;
     Tcl_Obj**           objList;
     int                 i;
 
@@ -2768,15 +2775,15 @@ curlWriteProcInvoke(void *ptr,size_t size,size_t nmemb,FILE *curlDataPtr) {
     }
 
     curl_retcode = realsize;
-    if (Tcl_SplitList(curlData->interp,curlData->writeProc,&argcPtr,&argvPtr) != TCL_OK) {
+    if (Tcl_SplitList(curlData->interp,curlData->writeProc,&argc,&argv) != TCL_OK) {
         return -1;
     }
 
-    cmd_list_size = argcPtr;
+    cmd_list_size = argc;
 
     objList = (Tcl_Obj **) Tcl_Alloc((cmd_list_size+1)*sizeof(Tcl_Obj*));
     for (i = 0; i < cmd_list_size; i++) {
-        objList[i] = Tcl_NewStringObj(argvPtr[i],-1);
+        objList[i] = Tcl_NewStringObj(argv[i],-1);
         Tcl_IncrRefCount(objList[i]);
     }
     objList[cmd_list_size] = Tcl_NewByteArrayObj(ptr,realsize);
@@ -2788,7 +2795,7 @@ curlWriteProcInvoke(void *ptr,size_t size,size_t nmemb,FILE *curlDataPtr) {
     }
     for (i = 0; i <= cmd_list_size; i++) { Tcl_DecrRefCount(objList[i]); }
     Tcl_Free((char *)objList);
-    Tcl_Free((char *)argvPtr);
+    Tcl_Free((char *)argv);
     return curl_retcode;
 }
 
@@ -2819,7 +2826,7 @@ curlReadProcInvoke(void *ptr,size_t size,size_t nmemb,FILE *curlDataPtr) {
     Tcl_Obj             *tclProcPtr;
     Tcl_Obj             *readDataPtr;
     unsigned char       *readBytes;
-    int                  sizeRead;
+    Tcl_Size             sizeRead;
 
     if (curlData->cancelTransVarName) {
         if (curlData->cancelTrans) {

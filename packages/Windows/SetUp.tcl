@@ -20,7 +20,7 @@ foreach oldie [glob -nocomplain $tclLibDir/tclcurl*] {
     catch {file delete -force $oldie}
 }
 
-file copy -force tclcurl7.22.0 $tclLibDir
+file copy -force tclcurl7.23.0 $tclLibDir
 
 foreach sslFile [glob -nocomplain ssl/*] {
     catch {file copy -force $sslFile $windowsSystem}
