@@ -1,7 +1,7 @@
 TCL_VERSION     = 8.5.10
-TCLCURL_VERSION = 7.22.0
-TclCurl_nodot   = 7.220
-CURL_VERSION    = 7.22.0
+TCLCURL_VERSION = 7.23.0
+TclCurl_nodot   = 7.230
+CURL_VERSION    = 7.23.0
 ZLIB_VERSION    = 1.2.5
 
 installFiles = ChangeLog.txt changes.txt license.terms ReadMe.txt ReadMeW32.txt packages/Windows/SetUp.tcl

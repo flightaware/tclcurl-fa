@@ -57,7 +57,7 @@ extern "C" {
 #define TCL_STORAGE_CLASS DLLEXPORT
 #endif
 
-#define TclCurlVersion "7.22.0"
+#define TclCurlVersion "7.23.0"
 
 /*
  * This struct will contain the data of a transfer if the user wants
